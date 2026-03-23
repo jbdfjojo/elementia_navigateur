@@ -1,0 +1,411 @@
+/* --------------------------------------------------------- */
+/* RÉINITIALISATION GLOBALE                                  */
+/* --------------------------------------------------------- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* --------------------------------------------------------- */
+/* PAGE GLOBALE                                              */
+/* --------------------------------------------------------- */
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: radial-gradient(circle at top, #2f2a22 0%, #141414 45%, #090909 100%);
+    color: #f2eadb;
+    min-height: 100vh;
+}
+
+/* --------------------------------------------------------- */
+/* CONTENEUR PRINCIPAL                                       */
+/* --------------------------------------------------------- */
+.page-authentification {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 30px;
+}
+
+/* --------------------------------------------------------- */
+/* CARTE PRINCIPALE                                          */
+/* --------------------------------------------------------- */
+.carte-authentification {
+    width: 100%;
+    max-width: 1100px;
+    background: rgba(15, 15, 15, 0.92);
+    border: 1px solid rgba(201, 161, 74, 0.45);
+    border-radius: 18px;
+    box-shadow: 0 0 35px rgba(0, 0, 0, 0.45);
+    padding: 35px;
+}
+
+.carte-authentification-simple {
+    max-width: 560px;
+}
+
+/* --------------------------------------------------------- */
+/* ZONE TITRE                                                */
+/* --------------------------------------------------------- */
+.zone-logo {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* --------------------------------------------------------- */
+/* LOGO PRINCIPAL PAGE                                       */
+/* SUPPRIMÉ VISUELLEMENT POUR ÉVITER LE DOUBLE LOGO          */
+/* --------------------------------------------------------- */
+.logo-jeu {
+    display: none;
+}
+
+/* --------------------------------------------------------- */
+/* TITRE PRINCIPAL                                           */
+/* --------------------------------------------------------- */
+.zone-logo h1 {
+    font-size: 40px;
+    margin-bottom: 8px;
+    color: #e0bf73;
+    text-shadow: 0 0 12px rgba(224, 191, 115, 0.18);
+}
+
+/* --------------------------------------------------------- */
+/* SOUS-TITRE                                                */
+/* --------------------------------------------------------- */
+.sous-titre {
+    color: #cfc6b1;
+    font-size: 16px;
+}
+
+/* --------------------------------------------------------- */
+/* BLOCS DE FORMULAIRES                                      */
+/* --------------------------------------------------------- */
+.bloc-formulaire {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(201, 161, 74, 0.20);
+    border-radius: 14px;
+    padding: 24px;
+}
+
+.bloc-formulaire h2 {
+    font-size: 24px;
+    color: #e0bf73;
+    margin-bottom: 18px;
+}
+
+.texte-explicatif {
+    margin-bottom: 16px;
+    color: #d9d0bd;
+}
+
+/* --------------------------------------------------------- */
+/* FORMULAIRES                                               */
+/* --------------------------------------------------------- */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.formulaire-secondaire {
+    margin-top: 12px;
+}
+
+label {
+    font-size: 14px;
+    color: #f2eadb;
+}
+
+input,
+select {
+    width: 100%;
+    background: #101010;
+    color: #f2eadb;
+    border: 1px solid rgba(201, 161, 74, 0.35);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 15px;
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: #e0bf73;
+    box-shadow: 0 0 12px rgba(224, 191, 115, 0.18);
+}
+
+/* --------------------------------------------------------- */
+/* BOUTONS                                                   */
+/* --------------------------------------------------------- */
+button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    align-self: flex-start;
+    min-width: 180px;
+    max-width: 280px;
+    width: auto;
+    padding: 10px 18px;
+    background: linear-gradient(180deg, #b99141 0%, #8b6a29 100%);
+    border: none;
+    border-radius: 10px;
+    color: #ffffff;
+    font-size: 15px;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+button:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+}
+
+.bouton-secondaire {
+    background: linear-gradient(180deg, #666666 0%, #3f3f3f 100%);
+}
+
+.bouton-lien {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    min-width: auto;
+    max-width: none;
+    width: auto;
+    color: #e0bf73;
+    font-size: 14px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.bouton-lien:hover {
+    text-decoration: underline;
+    transform: none;
+    opacity: 1;
+}
+
+/* --------------------------------------------------------- */
+/* MESSAGES                                                  */
+/* --------------------------------------------------------- */
+.boite-message {
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+}
+
+.boite-erreur {
+    background: rgba(120, 25, 25, 0.30);
+    border: 1px solid rgba(255, 100, 100, 0.35);
+    color: #ffd1d1;
+}
+
+.boite-succes {
+    background: rgba(25, 120, 60, 0.25);
+    border: 1px solid rgba(100, 255, 160, 0.30);
+    color: #d9ffe8;
+}
+
+.lien-secondaire {
+    margin-top: 6px;
+    text-align: center;
+    font-size: 14px;
+    color: #cfc6b1;
+}
+
+/* --------------------------------------------------------- */
+/* LISTE PERSONNAGES                                         */
+/* --------------------------------------------------------- */
+.liste-personnages {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.carte-personnage {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(201, 161, 74, 0.18);
+    border-radius: 14px;
+    padding: 16px;
+}
+
+.carte-personnage h3 {
+    color: #e0bf73;
+    margin-bottom: 12px;
+}
+
+.carte-personnage p {
+    margin-bottom: 8px;
+}
+
+.zone-actions-secondaires {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* --------------------------------------------------------- */
+/* PAGE DE JEU                                               */
+/* --------------------------------------------------------- */
+.page-jeu {
+    width: 100%;
+}
+
+.zone-monde {
+    width: 100%;
+}
+
+.zone-carte-simulee {
+    position: relative;
+    min-height: 520px;
+    border-radius: 18px;
+    border: 2px solid rgba(0, 0, 0, 0.65);
+    background:
+        linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)),
+        radial-gradient(circle at center, #4e5d35 0%, #29311d 40%, #0e0f0d 100%);
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: inset 0 0 0 18px rgba(0, 0, 0, 0.72);
+}
+
+.mini-bloc-evenements {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    width: 260px;
+    background: rgba(12, 12, 12, 0.88);
+    border: 1px solid rgba(201, 161, 74, 0.32);
+    border-radius: 12px;
+    padding: 14px;
+}
+
+.mini-bloc-evenements h3 {
+    color: #e0bf73;
+    margin-bottom: 10px;
+}
+
+.texte-centre-monde {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+    text-align: center;
+}
+
+.texte-centre-monde h2 {
+    color: #e0bf73;
+    margin-bottom: 12px;
+}
+
+.barre-actions-jeu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+}
+
+/* --------------------------------------------------------- */
+/* ÉCRAN DE CHARGEMENT                                       */
+/* --------------------------------------------------------- */
+.ecran-chargement {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 5, 5, 0.94);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+.ecran-chargement.cache {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.boite-chargement {
+    text-align: center;
+    padding: 24px;
+}
+
+.logo-chargement {
+    max-width: 260px;
+    width: 100%;
+    margin-bottom: 18px;
+}
+
+.spinner-chargement {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 4px solid rgba(224, 191, 115, 0.22);
+    border-top-color: #e0bf73;
+    margin: 0 auto 14px auto;
+    animation: rotation 0.9s linear infinite;
+}
+
+@keyframes rotation {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* --------------------------------------------------------- */
+/* LOGO PRINCIPAL DANS LA CARTE                              */
+/* --------------------------------------------------------- */
+.logo-principal {
+    max-width: 220px;   /* taille idéale */
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* --------------------------------------------------------- */
+/* RESPONSIVE                                                */
+/* --------------------------------------------------------- */
+@media (max-width: 900px) {
+    .zone-logo h1 {
+        font-size: 32px;
+    }
+
+    .carte-authentification {
+        padding: 22px;
+    }
+
+    .mini-bloc-evenements {
+        position: static;
+        width: 100%;
+        margin: 16px;
+    }
+
+    .zone-carte-simulee {
+        min-height: 420px;
+        box-shadow: inset 0 0 0 10px rgba(0, 0, 0, 0.72);
+    }
+
+    button {
+        width: 100%;
+        max-width: none;
+        align-self: stretch;
+    }
+	
+	/* --------------------------------------------------------- */
+	/* LOGO PRINCIPAL DANS LA CARTE                              */
+	/* --------------------------------------------------------- */
+	.logo-principal {
+		max-width: 220px;   /* taille idéale */
+		width: 100%;
+		margin-bottom: 10px;
+	}
+}

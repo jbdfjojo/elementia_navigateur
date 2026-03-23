@@ -1,0 +1,16 @@
+# Fichiers sensibles
+configuration/base_de_donnees.php
+
+# Logs / temporaires
+stockage_temporaire/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# node (si un jour)
+node_modules/
