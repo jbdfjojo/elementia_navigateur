@@ -33,17 +33,65 @@ $etape = (int) ($creation['etape'] ?? 1);
 // ---------------------------------------------------------
 // Préparation des données d’affichage
 // ---------------------------------------------------------
+$element_choisi = (string) ($creation['element'] ?? '');
+$classe_choisie = (string) ($creation['classe'] ?? '');
+
+$classes_disponibles = [];
+if ($element_choisi !== '') {
+    $classes_disponibles = Routeur::obtenirClassesParElement($element_choisi);
+}
+
 $competences_elementaires = [];
-if (($creation['element'] ?? '') !== '' && ($creation['classe'] ?? '') !== '') {
-    $competences_elementaires = Routeur::obtenirCompetencesElementairesFictives(
-        (string) $creation['element'],
-        (string) $creation['classe']
+if ($element_choisi !== '' && $classe_choisie !== '') {
+    $competences_elementaires = Routeur::obtenirCompetencesElementairesCatalogue(
+        $connexion_base,
+        $element_choisi,
+        $classe_choisie
     );
 }
 
-$competences_neutres = Routeur::obtenirCompetencesNeutresFictives();
+$competences_neutres = Routeur::obtenirCompetencesNeutresCatalogue($connexion_base);
 $avatars = Routeur::obtenirAvatarsFictifs();
-$suggestion = Routeur::obtenirSuggestionStatistiques((string) ($creation['classe'] ?? 'DPS'));
+$suggestion = Routeur::obtenirSuggestionStatistiques($classe_choisie);
+
+// ---------------------------------------------------------
+// Pré-remplissage intelligent des statistiques
+// ---------------------------------------------------------
+$statistiques_actuelles = $creation['statistiques'] ?? [];
+
+$total_statistiques_actuelles = 0;
+
+foreach ($statistiques_actuelles as $valeur_statistique_actuelle) {
+    $total_statistiques_actuelles += (int) $valeur_statistique_actuelle;
+}
+
+$statistiques_affichees = [];
+
+if ($total_statistiques_actuelles > 0) {
+    $statistiques_affichees = [
+        'point_de_vie' => (int) ($statistiques_actuelles['point_de_vie'] ?? 0),
+        'attaque' => (int) ($statistiques_actuelles['attaque'] ?? 0),
+        'magie' => (int) ($statistiques_actuelles['magie'] ?? 0),
+        'agilite' => (int) ($statistiques_actuelles['agilite'] ?? 0),
+        'intelligence' => (int) ($statistiques_actuelles['intelligence'] ?? 0),
+        'synchronisation_elementaire' => (int) ($statistiques_actuelles['synchronisation_elementaire'] ?? 0),
+        'critique' => (int) ($statistiques_actuelles['critique'] ?? 0),
+        'dexterite' => (int) ($statistiques_actuelles['dexterite'] ?? 0),
+        'defense' => (int) ($statistiques_actuelles['defense'] ?? 0)
+    ];
+} else {
+    $statistiques_affichees = [
+        'point_de_vie' => (int) ($suggestion['point_de_vie'] ?? 0),
+        'attaque' => (int) ($suggestion['attaque'] ?? 0),
+        'magie' => (int) ($suggestion['magie'] ?? 0),
+        'agilite' => (int) ($suggestion['agilite'] ?? 0),
+        'intelligence' => (int) ($suggestion['intelligence'] ?? 0),
+        'synchronisation_elementaire' => (int) ($suggestion['synchronisation_elementaire'] ?? 0),
+        'critique' => (int) ($suggestion['critique'] ?? 0),
+        'dexterite' => (int) ($suggestion['dexterite'] ?? 0),
+        'defense' => (int) ($suggestion['defense'] ?? 0)
+    ];
+}
 ?>
 <div class="bloc-formulaire">
     <div class="zone-entete-creation">
@@ -74,28 +122,28 @@ $suggestion = Routeur::obtenirSuggestionStatistiques((string) ($creation['classe
 
             <div class="grille-choix-cartes">
                 <label class="carte-choix-element element-feu">
-                    <input type="radio" name="element" value="Feu" <?= ($creation['element'] ?? '') === 'Feu' ? 'checked' : ''; ?> required>
+                    <input type="radio" name="element" value="Feu" <?= $element_choisi === 'Feu' ? 'checked' : ''; ?> required>
                     <span class="icone-element">🔥</span>
                     <strong>Feu</strong>
                     <small>Région : <?= htmlspecialchars(Routeur::obtenirRegionDepartParElement('Feu'), ENT_QUOTES, 'UTF-8'); ?></small>
                 </label>
 
                 <label class="carte-choix-element element-eau">
-                    <input type="radio" name="element" value="Eau" <?= ($creation['element'] ?? '') === 'Eau' ? 'checked' : ''; ?> required>
+                    <input type="radio" name="element" value="Eau" <?= $element_choisi === 'Eau' ? 'checked' : ''; ?> required>
                     <span class="icone-element">💧</span>
                     <strong>Eau</strong>
                     <small>Région : <?= htmlspecialchars(Routeur::obtenirRegionDepartParElement('Eau'), ENT_QUOTES, 'UTF-8'); ?></small>
                 </label>
 
                 <label class="carte-choix-element element-air">
-                    <input type="radio" name="element" value="Air" <?= ($creation['element'] ?? '') === 'Air' ? 'checked' : ''; ?> required>
+                    <input type="radio" name="element" value="Air" <?= $element_choisi === 'Air' ? 'checked' : ''; ?> required>
                     <span class="icone-element">🌪</span>
                     <strong>Air</strong>
                     <small>Région : <?= htmlspecialchars(Routeur::obtenirRegionDepartParElement('Air'), ENT_QUOTES, 'UTF-8'); ?></small>
                 </label>
 
                 <label class="carte-choix-element element-terre">
-                    <input type="radio" name="element" value="Terre" <?= ($creation['element'] ?? '') === 'Terre' ? 'checked' : ''; ?> required>
+                    <input type="radio" name="element" value="Terre" <?= $element_choisi === 'Terre' ? 'checked' : ''; ?> required>
                     <span class="icone-element">🌿</span>
                     <strong>Terre</strong>
                     <small>Région : <?= htmlspecialchars(Routeur::obtenirRegionDepartParElement('Terre'), ENT_QUOTES, 'UTF-8'); ?></small>
@@ -107,31 +155,27 @@ $suggestion = Routeur::obtenirSuggestionStatistiques((string) ($creation['classe
 
     <?php elseif ($etape === 2) : ?>
         <p class="texte-explicatif">
-            Élément choisi : <strong><?= htmlspecialchars((string) $creation['element'], ENT_QUOTES, 'UTF-8'); ?></strong>
-            — Région de départ : <strong><?= htmlspecialchars((string) $creation['region_depart'], ENT_QUOTES, 'UTF-8'); ?></strong>
+            Élément choisi : <strong><?= htmlspecialchars($element_choisi, ENT_QUOTES, 'UTF-8'); ?></strong>
+            — Région de départ : <strong><?= htmlspecialchars((string) ($creation['region_depart'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></strong>
         </p>
 
         <form method="post" action="index.php" class="formulaire-avec-chargement">
             <input type="hidden" name="action" value="creation_personnage_etape_2">
 
             <div class="grille-choix-cartes">
-                <label class="carte-choix-classe">
-                    <input type="radio" name="classe" value="Tank" <?= ($creation['classe'] ?? '') === 'Tank' ? 'checked' : ''; ?> required>
-                    <strong>Tank</strong>
-                    <small>Style défensif et résistance élevée.</small>
-                </label>
-
-                <label class="carte-choix-classe">
-                    <input type="radio" name="classe" value="Heal" <?= ($creation['classe'] ?? '') === 'Heal' ? 'checked' : ''; ?> required>
-                    <strong>Heal</strong>
-                    <small>Style de soutien et soins.</small>
-                </label>
-
-                <label class="carte-choix-classe">
-                    <input type="radio" name="classe" value="DPS" <?= ($creation['classe'] ?? '') === 'DPS' ? 'checked' : ''; ?> required>
-                    <strong>DPS</strong>
-                    <small>Style offensif et dégâts rapides.</small>
-                </label>
+                <?php foreach ($classes_disponibles as $nom_classe => $description_classe) : ?>
+                    <label class="carte-choix-classe">
+                        <input
+                            type="radio"
+                            name="classe"
+                            value="<?= htmlspecialchars($nom_classe, ENT_QUOTES, 'UTF-8'); ?>"
+                            <?= $classe_choisie === $nom_classe ? 'checked' : ''; ?>
+                            required
+                        >
+                        <strong><?= htmlspecialchars($nom_classe, ENT_QUOTES, 'UTF-8'); ?></strong>
+                        <small><?= htmlspecialchars($description_classe, ENT_QUOTES, 'UTF-8'); ?></small>
+                    </label>
+                <?php endforeach; ?>
             </div>
 
             <button type="submit">Valider la classe</button>
@@ -148,8 +192,8 @@ $suggestion = Routeur::obtenirSuggestionStatistiques((string) ($creation['classe
         </p>
 
         <p class="texte-explicatif">
-            Élément : <strong><?= htmlspecialchars((string) $creation['element'], ENT_QUOTES, 'UTF-8'); ?></strong>
-            — Classe : <strong><?= htmlspecialchars((string) $creation['classe'], ENT_QUOTES, 'UTF-8'); ?></strong>
+            Élément : <strong><?= htmlspecialchars($element_choisi, ENT_QUOTES, 'UTF-8'); ?></strong>
+            — Classe : <strong><?= htmlspecialchars($classe_choisie, ENT_QUOTES, 'UTF-8'); ?></strong>
         </p>
 
         <div id="compteur-competences-elementaires" class="compteur-selection">
@@ -165,14 +209,19 @@ $suggestion = Routeur::obtenirSuggestionStatistiques((string) ($creation['classe
                         <input
                             type="checkbox"
                             name="competences_elementaires[]"
-                            value="<?= htmlspecialchars($competence, ENT_QUOTES, 'UTF-8'); ?>"
-                            <?= in_array($competence, $creation['competences_elementaires'] ?? [], true) ? 'checked' : ''; ?>
+                            value="<?= htmlspecialchars((string) $competence['code_competence'], ENT_QUOTES, 'UTF-8'); ?>"
+                            <?= in_array((string) $competence['code_competence'], $creation['competences_elementaires'] ?? [], true) ? 'checked' : ''; ?>
                         >
-                        <strong><?= htmlspecialchars($competence, ENT_QUOTES, 'UTF-8'); ?></strong>
-                        <small>Compétence fictive temporaire pour la structure du code.</small>
+                        <strong><?= htmlspecialchars((string) $competence['nom'], ENT_QUOTES, 'UTF-8'); ?></strong>
+                        <small><?= htmlspecialchars((string) $competence['resume'], ENT_QUOTES, 'UTF-8'); ?></small>
+                        <small>Coût : <?= (int) ($competence['cout_utilisation'] ?? 0); ?> — <?= htmlspecialchars((string) ($competence['ressource_utilisee'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></small>
                     </label>
                 <?php endforeach; ?>
             </div>
+
+            <p class="texte-explicatif">
+                Ce choix est définitif. Pour modifier une compétence plus tard, il faudra consulter un maître spécialisé.
+            </p>
 
             <button type="submit">Valider les compétences élémentaires</button>
         </form>
@@ -184,7 +233,7 @@ $suggestion = Routeur::obtenirSuggestionStatistiques((string) ($creation['classe
 
     <?php elseif ($etape === 4) : ?>
         <p class="texte-explicatif">
-            Choisissez exactement <strong>3 compétences neutres</strong> parmi les 5 proposées.
+            Choisissez exactement <strong>3 compétences neutres</strong> parmi les 10 proposées.
         </p>
 
         <div id="compteur-competences-neutres" class="compteur-selection">
@@ -200,14 +249,19 @@ $suggestion = Routeur::obtenirSuggestionStatistiques((string) ($creation['classe
                         <input
                             type="checkbox"
                             name="competences_neutres[]"
-                            value="<?= htmlspecialchars($competence, ENT_QUOTES, 'UTF-8'); ?>"
-                            <?= in_array($competence, $creation['competences_neutres'] ?? [], true) ? 'checked' : ''; ?>
+                            value="<?= htmlspecialchars((string) $competence['code_competence'], ENT_QUOTES, 'UTF-8'); ?>"
+                            <?= in_array((string) $competence['code_competence'], $creation['competences_neutres'] ?? [], true) ? 'checked' : ''; ?>
                         >
-                        <strong><?= htmlspecialchars($competence, ENT_QUOTES, 'UTF-8'); ?></strong>
-                        <small>Compétence neutre fictive récupérable plus tard en jeu.</small>
+                        <strong><?= htmlspecialchars((string) $competence['nom'], ENT_QUOTES, 'UTF-8'); ?></strong>
+                        <small><?= htmlspecialchars((string) $competence['resume'], ENT_QUOTES, 'UTF-8'); ?></small>
+                        <small>Progression : <?= htmlspecialchars((string) ($competence['declencheur_progression'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></small>
                     </label>
                 <?php endforeach; ?>
             </div>
+
+            <p class="texte-explicatif">
+                Ce choix est définitif. Vous pourrez les remplacer plus tard uniquement via un maître spécialisé.
+            </p>
 
             <button type="submit">Valider les compétences neutres</button>
         </form>
@@ -223,7 +277,7 @@ $suggestion = Routeur::obtenirSuggestionStatistiques((string) ($creation['classe
         </p>
 
         <div class="bloc-suggestion">
-            <h3>Suggestion automatique pour la classe <?= htmlspecialchars((string) $creation['classe'], ENT_QUOTES, 'UTF-8'); ?></h3>
+            <h3>Suggestion automatique pour la classe <?= htmlspecialchars($classe_choisie, ENT_QUOTES, 'UTF-8'); ?></h3>
 
             <div class="grille-suggestion">
                 <?php foreach ($suggestion as $nom_statistique => $valeur_statistique) : ?>
@@ -251,26 +305,21 @@ $suggestion = Routeur::obtenirSuggestionStatistiques((string) ($creation['classe
             <label>Choix de l’avatar</label>
             <div id="grille-avatars" class="grille-avatars">
                 <?php foreach ($avatars as $avatar) : ?>
-                    <label
-                        class="carte-avatar"
-                        data-sexe="<?= htmlspecialchars($avatar['sexe'], ENT_QUOTES, 'UTF-8'); ?>"
-                    >
+                    <label class="carte-avatar" data-sexe="<?= htmlspecialchars((string) $avatar['sexe'], ENT_QUOTES, 'UTF-8'); ?>">
                         <input
                             type="radio"
                             name="avatar"
-                            value="<?= htmlspecialchars($avatar['identifiant'], ENT_QUOTES, 'UTF-8'); ?>"
+                            value="<?= htmlspecialchars((string) $avatar['identifiant'], ENT_QUOTES, 'UTF-8'); ?>"
                             <?= ($creation['avatar'] ?? '') === $avatar['identifiant'] ? 'checked' : ''; ?>
                         >
-
                         <div class="cadre-avatar-image">
                             <img
-                                src="<?= htmlspecialchars($avatar['image'], ENT_QUOTES, 'UTF-8'); ?>"
-                                alt="<?= htmlspecialchars($avatar['nom'], ENT_QUOTES, 'UTF-8'); ?>"
+                                src="<?= htmlspecialchars((string) $avatar['image'], ENT_QUOTES, 'UTF-8'); ?>"
+                                alt="<?= htmlspecialchars((string) $avatar['nom'], ENT_QUOTES, 'UTF-8'); ?>"
                                 class="image-avatar"
                             >
                         </div>
-
-                        <strong><?= htmlspecialchars($avatar['nom'], ENT_QUOTES, 'UTF-8'); ?></strong>
+                        <strong><?= htmlspecialchars((string) $avatar['nom'], ENT_QUOTES, 'UTF-8'); ?></strong>
                     </label>
                 <?php endforeach; ?>
             </div>
@@ -282,47 +331,47 @@ $suggestion = Routeur::obtenirSuggestionStatistiques((string) ($creation['classe
             <div class="grille-statistiques">
                 <div class="champ-statistique">
                     <label for="point_de_vie">Point de vie</label>
-                    <input type="number" id="point_de_vie" name="point_de_vie" min="0" value="<?= (int) (($creation['statistiques']['point_de_vie'] ?? 0)); ?>" required>
+                    <input type="number" id="point_de_vie" name="point_de_vie" min="0" step="1" inputmode="none" onkeydown="return false;" onpaste="return false;" ondrop="return false;" value="<?= (int) ($statistiques_affichees['point_de_vie'] ?? 0); ?>" required>
                 </div>
 
                 <div class="champ-statistique">
                     <label for="attaque">Attaque</label>
-                    <input type="number" id="attaque" name="attaque" min="0" value="<?= (int) (($creation['statistiques']['attaque'] ?? 0)); ?>" required>
+                    <input type="number" id="attaque" name="attaque" min="0" step="1" inputmode="none" onkeydown="return false;" onpaste="return false;" ondrop="return false;" value="<?= (int) ($statistiques_affichees['attaque'] ?? 0); ?>" required>
                 </div>
 
                 <div class="champ-statistique">
                     <label for="magie">Magie</label>
-                    <input type="number" id="magie" name="magie" min="0" value="<?= (int) (($creation['statistiques']['magie'] ?? 0)); ?>" required>
+                    <input type="number" id="magie" name="magie" min="0" step="1" inputmode="none" onkeydown="return false;" onpaste="return false;" ondrop="return false;" value="<?= (int) ($statistiques_affichees['magie'] ?? 0); ?>" required>
                 </div>
 
                 <div class="champ-statistique">
                     <label for="agilite">Agilité</label>
-                    <input type="number" id="agilite" name="agilite" min="0" value="<?= (int) (($creation['statistiques']['agilite'] ?? 0)); ?>" required>
+                    <input type="number" id="agilite" name="agilite" min="0" step="1" inputmode="none" onkeydown="return false;" onpaste="return false;" ondrop="return false;" value="<?= (int) ($statistiques_affichees['agilite'] ?? 0); ?>" required>
                 </div>
 
                 <div class="champ-statistique">
                     <label for="intelligence">Intelligence</label>
-                    <input type="number" id="intelligence" name="intelligence" min="0" value="<?= (int) (($creation['statistiques']['intelligence'] ?? 0)); ?>" required>
+                    <input type="number" id="intelligence" name="intelligence" min="0" step="1" inputmode="none" onkeydown="return false;" onpaste="return false;" ondrop="return false;" value="<?= (int) ($statistiques_affichees['intelligence'] ?? 0); ?>" required>
                 </div>
 
                 <div class="champ-statistique">
                     <label for="synchronisation_elementaire">Synchronisation élémentaire</label>
-                    <input type="number" id="synchronisation_elementaire" name="synchronisation_elementaire" min="0" value="<?= (int) (($creation['statistiques']['synchronisation_elementaire'] ?? 0)); ?>" required>
+                    <input type="number" id="synchronisation_elementaire" name="synchronisation_elementaire" min="0" step="1" inputmode="none" onkeydown="return false;" onpaste="return false;" ondrop="return false;" value="<?= (int) ($statistiques_affichees['synchronisation_elementaire'] ?? 0); ?>" required>
                 </div>
 
                 <div class="champ-statistique">
                     <label for="critique">Critique</label>
-                    <input type="number" id="critique" name="critique" min="0" value="<?= (int) (($creation['statistiques']['critique'] ?? 0)); ?>" required>
+                    <input type="number" id="critique" name="critique" min="0" step="1" inputmode="none" onkeydown="return false;" onpaste="return false;" ondrop="return false;" value="<?= (int) ($statistiques_affichees['critique'] ?? 0); ?>" required>
                 </div>
 
                 <div class="champ-statistique">
                     <label for="dexterite">Dextérité</label>
-                    <input type="number" id="dexterite" name="dexterite" min="0" value="<?= (int) (($creation['statistiques']['dexterite'] ?? 0)); ?>" required>
+                    <input type="number" id="dexterite" name="dexterite" min="0" step="1" inputmode="none" onkeydown="return false;" onpaste="return false;" ondrop="return false;" value="<?= (int) ($statistiques_affichees['dexterite'] ?? 0); ?>" required>
                 </div>
 
                 <div class="champ-statistique">
                     <label for="defense">Défense</label>
-                    <input type="number" id="defense" name="defense" min="0" value="<?= (int) (($creation['statistiques']['defense'] ?? 0)); ?>" required>
+                    <input type="number" id="defense" name="defense" min="0" step="1" inputmode="none" onkeydown="return false;" onpaste="return false;" ondrop="return false;" value="<?= (int) ($statistiques_affichees['defense'] ?? 0); ?>" required>
                 </div>
             </div>
 

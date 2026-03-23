@@ -11,15 +11,28 @@ class Routeur
     // -----------------------------------------------------
     public static function gerer(PDO $connexion_base): void
     {
+        // -------------------------------------------------
+        // Initialisation des vues par défaut
+        // -------------------------------------------------
         if (!isset($_SESSION['vue_auth'])) {
             $_SESSION['vue_auth'] = 'connexion';
         }
 
+        // -------------------------------------------------
+        // Traitement des actions envoyées en POST
+        // -------------------------------------------------
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             self::traiterActions($connexion_base);
         }
 
+        // -------------------------------------------------
+        // Détermination de la vue finale à afficher
+        // -------------------------------------------------
         $vue = self::determinerVue();
+
+        // -------------------------------------------------
+        // Chargement du gabarit principal
+        // -------------------------------------------------
         include __DIR__ . '/../vues/commun/gabarit_principal.php';
     }
 
@@ -28,10 +41,16 @@ class Routeur
     // -----------------------------------------------------
     private static function determinerVue(): string
     {
+        // -------------------------------------------------
+        // Si aucun compte n’est connecté
+        // -------------------------------------------------
         if (!isset($_SESSION['compte_id'])) {
             return $_SESSION['vue_auth'] === 'inscription' ? 'inscription' : 'connexion';
         }
 
+        // -------------------------------------------------
+        // Si aucun personnage actif n’est sélectionné
+        // -------------------------------------------------
         if (!isset($_SESSION['personnage_id'])) {
             if (isset($_SESSION['vue_personnage']) && $_SESSION['vue_personnage'] === 'creation_personnage') {
                 return 'creation_personnage';
@@ -40,6 +59,9 @@ class Routeur
             return 'selection_personnage';
         }
 
+        // -------------------------------------------------
+        // Sinon le joueur entre dans le monde
+        // -------------------------------------------------
         return 'jeu';
     }
 
@@ -48,8 +70,14 @@ class Routeur
     // -----------------------------------------------------
     private static function traiterActions(PDO $connexion_base): void
     {
+        // -------------------------------------------------
+        // Récupération de l’action
+        // -------------------------------------------------
         $action = $_POST['action'] ?? '';
 
+        // -------------------------------------------------
+        // Navigation authentification
+        // -------------------------------------------------
         if ($action === 'afficher_inscription') {
             $_SESSION['vue_auth'] = 'inscription';
             self::redirigerIndex();
@@ -60,6 +88,9 @@ class Routeur
             self::redirigerIndex();
         }
 
+        // -------------------------------------------------
+        // Déconnexion complète
+        // -------------------------------------------------
         if ($action === 'deconnexion') {
             $_SESSION = [];
             session_destroy();
@@ -68,6 +99,9 @@ class Routeur
             self::redirigerIndex();
         }
 
+        // -------------------------------------------------
+        // Connexion / inscription
+        // -------------------------------------------------
         if ($action === 'connexion') {
             self::traiterConnexion($connexion_base);
         }
@@ -76,6 +110,9 @@ class Routeur
             self::traiterInscription($connexion_base);
         }
 
+        // -------------------------------------------------
+        // Accès à la création personnage
+        // -------------------------------------------------
         if ($action === 'afficher_creation_personnage') {
             self::verifierCompteConnecte();
             self::initialiserCreationPersonnage();
@@ -83,6 +120,9 @@ class Routeur
             self::redirigerIndex();
         }
 
+        // -------------------------------------------------
+        // Retour à la liste des personnages
+        // -------------------------------------------------
         if ($action === 'retour_selection_personnage') {
             self::verifierCompteConnecte();
             unset($_SESSION['creation_personnage']);
@@ -90,6 +130,9 @@ class Routeur
             self::redirigerIndex();
         }
 
+        // -------------------------------------------------
+        // Étapes de création personnage
+        // -------------------------------------------------
         if ($action === 'creation_personnage_etape_1') {
             self::traiterCreationPersonnageEtape1();
         }
@@ -99,11 +142,11 @@ class Routeur
         }
 
         if ($action === 'creation_personnage_etape_3') {
-            self::traiterCreationPersonnageEtape3();
+            self::traiterCreationPersonnageEtape3($connexion_base);
         }
 
         if ($action === 'creation_personnage_etape_4') {
-            self::traiterCreationPersonnageEtape4();
+            self::traiterCreationPersonnageEtape4($connexion_base);
         }
 
         if ($action === 'creation_personnage_etape_5') {
@@ -138,10 +181,16 @@ class Routeur
             self::redirigerIndex();
         }
 
+        // -------------------------------------------------
+        // Sélection d’un personnage existant
+        // -------------------------------------------------
         if ($action === 'selectionner_personnage') {
             self::traiterSelectionPersonnage($connexion_base);
         }
 
+        // -------------------------------------------------
+        // Suppression d’un personnage existant
+        // -------------------------------------------------
         if ($action === 'supprimer_personnage') {
             self::traiterSuppressionPersonnage($connexion_base);
         }
@@ -177,7 +226,7 @@ class Routeur
     }
 
     // -----------------------------------------------------
-    // Étape 1
+    // Étape 1 : choix de l’élément
     // -----------------------------------------------------
     private static function traiterCreationPersonnageEtape1(): void
     {
@@ -201,7 +250,10 @@ class Routeur
     }
 
     // -----------------------------------------------------
-    // Étape 2
+    // Étape 2 : choix de la classe
+    // -----------------------------------------------------
+    // -----------------------------------------------------
+    // Étape 2 : choix de la classe liée à l’élément
     // -----------------------------------------------------
     private static function traiterCreationPersonnageEtape2(): void
     {
@@ -209,10 +261,12 @@ class Routeur
         self::verifierCreationPersonnageActive();
 
         $classe = trim($_POST['classe'] ?? '');
-        $classes_valides = ['Tank', 'Heal', 'DPS'];
+        $element = (string) ($_SESSION['creation_personnage']['element'] ?? '');
+
+        $classes_valides = array_keys(self::obtenirClassesParElement($element));
 
         if (!in_array($classe, $classes_valides, true)) {
-            $_SESSION['messages_erreur'] = ['Vous devez choisir une classe valide.'];
+            $_SESSION['messages_erreur'] = ['Vous devez choisir une classe valide pour cet élément.'];
             $_SESSION['vue_personnage'] = 'creation_personnage';
             self::redirigerIndex();
         }
@@ -224,9 +278,12 @@ class Routeur
     }
 
     // -----------------------------------------------------
-    // Étape 3
+    // Étape 3 : choix de 4 compétences élémentaires
     // -----------------------------------------------------
-    private static function traiterCreationPersonnageEtape3(): void
+    // -----------------------------------------------------
+    // Étape 3 : choix de 4 compétences élémentaires du catalogue
+    // -----------------------------------------------------
+    private static function traiterCreationPersonnageEtape3(PDO $connexion_base): void
     {
         self::verifierCompteConnecte();
         self::verifierCreationPersonnageActive();
@@ -240,15 +297,18 @@ class Routeur
 
         $competences = array_values(array_unique(array_map('strval', $competences)));
 
-        $competences_disponibles = self::obtenirCompetencesElementairesFictives(
-            $_SESSION['creation_personnage']['element'],
-            $_SESSION['creation_personnage']['classe']
+        $catalogue = self::obtenirCompetencesElementairesCatalogue(
+            $connexion_base,
+            (string) $_SESSION['creation_personnage']['element'],
+            (string) $_SESSION['creation_personnage']['classe']
         );
 
+        $codes_valides = array_column($catalogue, 'code_competence');
         $competences_valides = [];
-        foreach ($competences as $competence) {
-            if (in_array($competence, $competences_disponibles, true)) {
-                $competences_valides[] = $competence;
+
+        foreach ($competences as $code_competence) {
+            if (in_array($code_competence, $codes_valides, true)) {
+                $competences_valides[] = $code_competence;
             }
         }
 
@@ -265,9 +325,12 @@ class Routeur
     }
 
     // -----------------------------------------------------
-    // Étape 4
+    // Étape 4 : choix de 3 compétences neutres
     // -----------------------------------------------------
-    private static function traiterCreationPersonnageEtape4(): void
+    // -----------------------------------------------------
+    // Étape 4 : choix de 3 compétences neutres du catalogue
+    // -----------------------------------------------------
+    private static function traiterCreationPersonnageEtape4(PDO $connexion_base): void
     {
         self::verifierCompteConnecte();
         self::verifierCreationPersonnageActive();
@@ -280,12 +343,14 @@ class Routeur
         }
 
         $competences = array_values(array_unique(array_map('strval', $competences)));
-        $competences_disponibles = self::obtenirCompetencesNeutresFictives();
 
+        $catalogue = self::obtenirCompetencesNeutresCatalogue($connexion_base);
+        $codes_valides = array_column($catalogue, 'code_competence');
         $competences_valides = [];
-        foreach ($competences as $competence) {
-            if (in_array($competence, $competences_disponibles, true)) {
-                $competences_valides[] = $competence;
+
+        foreach ($competences as $code_competence) {
+            if (in_array($code_competence, $codes_valides, true)) {
+                $competences_valides[] = $code_competence;
             }
         }
 
@@ -302,7 +367,7 @@ class Routeur
     }
 
     // -----------------------------------------------------
-    // Étape 5
+    // Étape 5 : identité + statistiques + création finale
     // -----------------------------------------------------
     private static function traiterCreationPersonnageEtape5(PDO $connexion_base): void
     {
@@ -340,6 +405,23 @@ class Routeur
 
         if (!in_array($sexe, ['homme', 'femme'], true)) {
             $messages_erreur[] = 'Vous devez choisir un sexe valide.';
+        }
+
+        $avatars_disponibles = self::obtenirAvatarsFictifs();
+        $avatar_valide = false;
+
+        foreach ($avatars_disponibles as $avatar_disponible) {
+            if (
+                $avatar_disponible['identifiant'] === $avatar
+                && $avatar_disponible['sexe'] === $sexe
+            ) {
+                $avatar_valide = true;
+                break;
+            }
+        }
+
+        if (!$avatar_valide) {
+            $messages_erreur[] = 'Vous devez choisir un avatar valide correspondant au sexe sélectionné.';
         }
 
         $statistiques = [
@@ -384,25 +466,6 @@ class Routeur
 
         if ($nombre_personnages >= 3) {
             $messages_erreur[] = 'Vous avez déjà atteint la limite de 3 personnages.';
-        }
-
-        $avatars_disponibles = self::obtenirAvatarsFictifs();
-        $avatar_valide = false;
-        $image_avatar_selectionnee = '';
-
-        foreach ($avatars_disponibles as $avatar_disponible) {
-            if (
-                $avatar_disponible['identifiant'] === $avatar
-                && $avatar_disponible['sexe'] === $sexe
-            ) {
-                $avatar_valide = true;
-                $image_avatar_selectionnee = $avatar_disponible['image'];
-                break;
-            }
-        }
-
-        if (!$avatar_valide) {
-            $messages_erreur[] = 'Vous devez choisir un avatar valide correspondant au sexe sélectionné.';
         }
 
         if (!empty($messages_erreur)) {
@@ -464,7 +527,7 @@ class Routeur
             'nom' => $nom,
             'element' => $_SESSION['creation_personnage']['element'],
             'classe' => $_SESSION['creation_personnage']['classe'],
-            'portrait' => $image_avatar_selectionnee,
+            'portrait' => self::obtenirCheminAvatarParIdentifiant($avatar),
             'sexe' => $sexe,
             'region_depart' => $_SESSION['creation_personnage']['region_depart'],
             'point_de_vie' => $point_de_vie,
@@ -481,27 +544,52 @@ class Routeur
         $personnage_id = (int) $connexion_base->lastInsertId();
 
         $requete_competence = $connexion_base->prepare(
-            'INSERT INTO personnage_competences (personnage_id, nom_competence, type_competence, ordre_affichage)
-             VALUES (:personnage_id, :nom_competence, :type_competence, :ordre_affichage)'
+            'INSERT INTO personnage_competences_progression (
+                personnage_id,
+                code_competence,
+                niveau_sort,
+                niveau_max_actuel,
+                est_ultime,
+                xp_actuelle,
+                xp_suivante,
+                est_equipee,
+                ordre_slot
+            ) VALUES (
+                :personnage_id,
+                :code_competence,
+                :niveau_sort,
+                :niveau_max_actuel,
+                0,
+                0,
+                100,
+                1,
+                :ordre_slot
+            )'
         );
 
         $ordre_affichage = 1;
-        foreach ($_SESSION['creation_personnage']['competences_elementaires'] as $competence_elementaire) {
+        foreach ($_SESSION['creation_personnage']['competences_elementaires'] as $code_competence) {
+            $niveau_max_actuel = self::obtenirNiveauMaxCompetenceDepuisCatalogue($connexion_base, $code_competence);
+
             $requete_competence->execute([
                 'personnage_id' => $personnage_id,
-                'nom_competence' => $competence_elementaire,
-                'type_competence' => 'elementaire',
-                'ordre_affichage' => $ordre_affichage
+                'code_competence' => $code_competence,
+                'niveau_sort' => 1,
+                'niveau_max_actuel' => $niveau_max_actuel,
+                'ordre_slot' => $ordre_affichage
             ]);
             $ordre_affichage++;
         }
 
-        foreach ($_SESSION['creation_personnage']['competences_neutres'] as $competence_neutre) {
+        foreach ($_SESSION['creation_personnage']['competences_neutres'] as $code_competence) {
+            $niveau_max_actuel = self::obtenirNiveauMaxCompetenceDepuisCatalogue($connexion_base, $code_competence);
+
             $requete_competence->execute([
                 'personnage_id' => $personnage_id,
-                'nom_competence' => $competence_neutre,
-                'type_competence' => 'neutre',
-                'ordre_affichage' => $ordre_affichage
+                'code_competence' => $code_competence,
+                'niveau_sort' => 1,
+                'niveau_max_actuel' => $niveau_max_actuel,
+                'ordre_slot' => $ordre_affichage
             ]);
             $ordre_affichage++;
         }
@@ -514,7 +602,7 @@ class Routeur
     }
 
     // -----------------------------------------------------
-    // Connexion
+    // Connexion du compte
     // -----------------------------------------------------
     private static function traiterConnexion(PDO $connexion_base): void
     {
@@ -565,7 +653,7 @@ class Routeur
     }
 
     // -----------------------------------------------------
-    // Inscription
+    // Inscription du compte
     // -----------------------------------------------------
     private static function traiterInscription(PDO $connexion_base): void
     {
@@ -635,7 +723,7 @@ class Routeur
     }
 
     // -----------------------------------------------------
-    // Sélection d’un personnage
+    // Sélection d’un personnage existant
     // -----------------------------------------------------
     private static function traiterSelectionPersonnage(PDO $connexion_base): void
     {
@@ -672,8 +760,9 @@ class Routeur
         self::redirigerIndex();
     }
 
+
     // -----------------------------------------------------
-    // Suppression d’un personnage
+    // Suppression d’un personnage existant
     // -----------------------------------------------------
     private static function traiterSuppressionPersonnage(PDO $connexion_base): void
     {
@@ -775,41 +864,118 @@ class Routeur
         return $correspondances[$element] ?? 'Elementia';
     }
 
+    
     // -----------------------------------------------------
-    // Compétences élémentaires fictives
+    // Liste des classes disponibles selon l’élément choisi
     // -----------------------------------------------------
-    public static function obtenirCompetencesElementairesFictives(string $element, string $classe): array
+    public static function obtenirClassesParElement(string $element): array
     {
-        return [
-            $element . ' - ' . $classe . ' - Éclat primaire',
-            $element . ' - ' . $classe . ' - Lame ancestrale',
-            $element . ' - ' . $classe . ' - Souffle concentré',
-            $element . ' - ' . $classe . ' - Onde de force',
-            $element . ' - ' . $classe . ' - Marque sacrée',
-            $element . ' - ' . $classe . ' - Sceau vivant',
-            $element . ' - ' . $classe . ' - Rayon rituel',
-            $element . ' - ' . $classe . ' - Danse du flux',
-            $element . ' - ' . $classe . ' - Aube guerrière',
-            $element . ' - ' . $classe . ' - Nexus intérieur'
+        $classes = [
+            'Feu' => [
+                'Guerrier du Feu' => 'Tank défensif renforcé par le feu.',
+                'Berserker du Feu' => 'DPS énergie brutal au corps à corps.',
+                'Mage du Feu' => 'DPS magie spécialisé dans les flammes.',
+                'Prêtre du Feu' => 'Soutien et soins par le feu vital.',
+            ],
+            'Eau' => [
+                'Guerrier de l’Eau' => 'Tank fluide et protecteur.',
+                'Combattant de l’Eau' => 'DPS énergie mobile et offensif.',
+                'Mage de l’Eau' => 'DPS magie des flots et des abysses.',
+                'Prêtre de l’Eau' => 'Soutien et purification par l’eau.',
+            ],
+            'Air' => [
+                'Guerrier de l’Air' => 'Tank mobile porté par les vents.',
+                'Chasseur de l’Air' => 'DPS énergie précis à distance.',
+                'Mage de l’Air' => 'DPS magie des rafales et tempêtes.',
+                'Prêtre de l’Air' => 'Soutien, protection et soins légers.',
+            ],
+            'Terre' => [
+                'Guerrier de la Terre' => 'Tank lourd et résistant.',
+                'Briseur de Terre' => 'DPS énergie de puissance brute.',
+                'Mage de la Terre' => 'DPS magie tellurique.',
+                'Prêtre de la Terre' => 'Soutien et régénération naturelle.',
+            ],
         ];
+
+        return $classes[$element] ?? [];
     }
 
     // -----------------------------------------------------
-    // Compétences neutres fictives
+    // Récupère les 10 compétences élémentaires normales
+    // pour l’élément et la classe choisis
     // -----------------------------------------------------
-    public static function obtenirCompetencesNeutresFictives(): array
+    public static function obtenirCompetencesElementairesCatalogue(PDO $connexion_base, string $element, string $classe): array
     {
-        return [
-            'Observation calme',
-            'Endurance simple',
-            'Méditation guidée',
-            'Réflexe précis',
-            'Volonté stable'
-        ];
+        $requete = $connexion_base->prepare(
+            "SELECT code_competence, nom, resume, cout_utilisation, ressource_utilisee
+             FROM catalogue_competences
+             WHERE famille_competence = 'elementaire'
+               AND element = :element
+               AND classe = :classe
+             ORDER BY ordre_affichage ASC, code_competence ASC"
+        );
+
+        $requete->execute([
+            'element' => $element,
+            'classe' => $classe
+        ]);
+
+        return $requete->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
     // -----------------------------------------------------
-    // Avatars fictifs avec chemins complets
+    // Récupère les 10 compétences neutres du catalogue
+    // -----------------------------------------------------
+    public static function obtenirCompetencesNeutresCatalogue(PDO $connexion_base): array
+    {
+        $requete = $connexion_base->query(
+            "SELECT code_competence, nom, resume, declencheur_progression
+             FROM catalogue_competences
+             WHERE famille_competence = 'neutre'
+             ORDER BY ordre_affichage ASC, code_competence ASC"
+        );
+
+        return $requete ? ($requete->fetchAll(PDO::FETCH_ASSOC) ?: []) : [];
+    }
+
+    // -----------------------------------------------------
+    // Récupère le niveau max naturel d’une compétence depuis
+    // le catalogue statique
+    // -----------------------------------------------------
+    public static function obtenirNiveauMaxCompetenceDepuisCatalogue(PDO $connexion_base, string $code_competence): int
+    {
+        $requete = $connexion_base->prepare(
+            "SELECT niveau_max_naturel
+             FROM catalogue_competences
+             WHERE code_competence = :code_competence
+             LIMIT 1"
+        );
+
+        $requete->execute([
+            'code_competence' => $code_competence
+        ]);
+
+        $ligne = $requete->fetch(PDO::FETCH_ASSOC);
+
+        return (int) ($ligne['niveau_max_naturel'] ?? 1);
+    }
+
+    // -----------------------------------------------------
+    // Retourne le chemin complet de l’avatar selon son identifiant
+    // -----------------------------------------------------
+    public static function obtenirCheminAvatarParIdentifiant(string $identifiant_avatar): string
+    {
+        foreach (self::obtenirAvatarsFictifs() as $avatar) {
+            if ($avatar['identifiant'] === $identifiant_avatar) {
+                return (string) $avatar['image'];
+            }
+        }
+
+        return '';
+    }
+
+    // -----------------------------------------------------
+    // Avatars fictifs
     // -----------------------------------------------------
     public static function obtenirAvatarsFictifs(): array
     {
@@ -882,7 +1048,11 @@ class Routeur
     // -----------------------------------------------------
     public static function obtenirSuggestionStatistiques(string $classe): array
     {
-        if ($classe === 'Tank') {
+        $classes_tank = ['Guerrier du Feu', 'Guerrier de l’Eau', 'Guerrier de l’Air', 'Guerrier de la Terre'];
+        $classes_heal = ['Prêtre du Feu', 'Prêtre de l’Eau', 'Prêtre de l’Air', 'Prêtre de la Terre'];
+        $classes_dps_magie = ['Mage du Feu', 'Mage de l’Eau', 'Mage de l’Air', 'Mage de la Terre'];
+
+        if (in_array($classe, $classes_tank, true)) {
             return [
                 'point_de_vie' => 7,
                 'attaque' => 2,
@@ -896,13 +1066,13 @@ class Routeur
             ];
         }
 
-        if ($classe === 'Heal') {
+        if (in_array($classe, $classes_heal, true)) {
             return [
                 'point_de_vie' => 3,
                 'attaque' => 1,
-                'magie' => 6,
+                'magie' => 5,
                 'agilite' => 2,
-                'intelligence' => 6,
+                'intelligence' => 7,
                 'synchronisation_elementaire' => 5,
                 'critique' => 1,
                 'dexterite' => 2,
@@ -910,16 +1080,30 @@ class Routeur
             ];
         }
 
+        if (in_array($classe, $classes_dps_magie, true)) {
+            return [
+                'point_de_vie' => 3,
+                'attaque' => 1,
+                'magie' => 7,
+                'agilite' => 3,
+                'intelligence' => 5,
+                'synchronisation_elementaire' => 6,
+                'critique' => 1,
+                'dexterite' => 2,
+                'defense' => 2
+            ];
+        }
+
         return [
             'point_de_vie' => 3,
             'attaque' => 6,
-            'magie' => 4,
+            'magie' => 2,
             'agilite' => 5,
             'intelligence' => 2,
-            'synchronisation_elementaire' => 4,
+            'synchronisation_elementaire' => 3,
             'critique' => 3,
-            'dexterite' => 2,
-            'defense' => 1
+            'dexterite' => 4,
+            'defense' => 2
         ];
     }
 
