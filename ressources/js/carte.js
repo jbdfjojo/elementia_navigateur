@@ -23,19 +23,20 @@
             return;
         }
 
-        const tailleCase = Number(zoneCarte.dataset.tailleCase || 96);
-        const zoomCarte = Number(zoneCarte.dataset.zoom || 1.65);
+        const tailleCase = Number(zoneCarte.dataset.tailleCase || 64);
+        const nombreColonnes = Number(zoneCarte.dataset.colonnes || 40);
+        const nombreLignes = Number(zoneCarte.dataset.lignes || 27);
         const cheminCarte = 'ressources/images/carte/carte_du_monde.png';
 
         const etatCarte = {
             largeurMonde: 0,
             hauteurMonde: 0,
-            colonne: Number(zoneCarte.dataset.colonneDepart || 14),
-            ligne: Number(zoneCarte.dataset.ligneDepart || 11),
+            colonne: Number(zoneCarte.dataset.colonneDepart || 18),
+            ligne: Number(zoneCarte.dataset.ligneDepart || 12),
             cameraX: 0,
             cameraY: 0,
-            colonneMax: 0,
-            ligneMax: 0
+            colonneMax: Math.max(0, nombreColonnes - 1),
+            ligneMax: Math.max(0, nombreLignes - 1)
         };
 
         function borner(valeur, minimum, maximum) {
@@ -57,7 +58,6 @@
             const largeurViewport = viewport.clientWidth;
             const hauteurViewport = viewport.clientHeight;
             if (largeurViewport <= 0 || hauteurViewport <= 0) {
-                console.warn('[Elementia] Viewport nul', largeurViewport, hauteurViewport);
                 return;
             }
 
@@ -91,17 +91,18 @@
             const yDansViewport = evenement.clientY - rectangleViewport.top;
             const xMonde = etatCarte.cameraX + xDansViewport;
             const yMonde = etatCarte.cameraY + yDansViewport;
+
             return {
-                colonne: Math.floor(xMonde / tailleCase),
-                ligne: Math.floor(yMonde / tailleCase)
+                colonne: borner(Math.floor(xMonde / tailleCase), 0, etatCarte.colonneMax),
+                ligne: borner(Math.floor(yMonde / tailleCase), 0, etatCarte.ligneMax)
             };
         }
 
         function finaliserInitialisation() {
-            etatCarte.largeurMonde = Math.round(imageCarte.naturalWidth * zoomCarte);
-            etatCarte.hauteurMonde = Math.round(imageCarte.naturalHeight * zoomCarte);
-            etatCarte.colonneMax = Math.max(0, Math.floor(etatCarte.largeurMonde / tailleCase) - 1);
-            etatCarte.ligneMax = Math.max(0, Math.floor(etatCarte.hauteurMonde / tailleCase) - 1);
+            etatCarte.largeurMonde = nombreColonnes * tailleCase;
+            etatCarte.hauteurMonde = nombreLignes * tailleCase;
+            etatCarte.colonne = borner(etatCarte.colonne, 0, etatCarte.colonneMax);
+            etatCarte.ligne = borner(etatCarte.ligne, 0, etatCarte.ligneMax);
 
             contenu.style.width = etatCarte.largeurMonde + 'px';
             contenu.style.height = etatCarte.hauteurMonde + 'px';
@@ -117,11 +118,11 @@
 
             rendreCarte();
             carteDejaInitialisee = true;
+
             console.log('[Elementia] Carte prête', {
-                naturalWidth: imageCarte.naturalWidth,
-                naturalHeight: imageCarte.naturalHeight,
-                viewportWidth: viewport.clientWidth,
-                viewportHeight: viewport.clientHeight,
+                colonnes: nombreColonnes,
+                lignes: nombreLignes,
+                tailleCase: tailleCase,
                 largeurMonde: etatCarte.largeurMonde,
                 hauteurMonde: etatCarte.hauteurMonde
             });
@@ -132,6 +133,7 @@
                 requestAnimationFrame(essayerInitialiser);
                 return;
             }
+
             finaliserInitialisation();
         }
 
@@ -151,6 +153,7 @@
             if (tagCible === 'input' || tagCible === 'textarea' || tagCible === 'select') {
                 return;
             }
+
             if (evenement.key === 'ArrowUp' || evenement.key === 'z' || evenement.key === 'Z') {
                 deplacerJoueurVers(etatCarte.colonne, etatCarte.ligne - 1);
             }

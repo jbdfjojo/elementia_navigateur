@@ -2,10 +2,12 @@
     <div
         id="zone-carte-monde"
         class="zone-carte-monde"
-        data-taille-case="96"
+        data-taille-case="64"
+        data-colonnes="40"
+        data-lignes="27"
         data-zoom="1.65"
-        data-colonne-depart="14"
-        data-ligne-depart="11"
+        data-colonne-depart="18"
+        data-ligne-depart="12"
     >
         <div class="carte-monde-viewport" id="carte-monde-viewport">
             <div class="carte-monde-camera" id="carte-monde-camera">
@@ -30,7 +32,7 @@
 
             <div class="bloc-position-joueur">
                 <strong>Position</strong>
-                <span id="valeur-position-joueur">Case 14 x 11</span>
+                <span id="valeur-position-joueur">Case 18 x 12</span>
             </div>
 
             <div class="bloc-aide-carte">
