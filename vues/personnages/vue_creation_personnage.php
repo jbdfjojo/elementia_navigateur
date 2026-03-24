@@ -147,6 +147,146 @@ if ($total_statistiques_actuelles > 0) {
         align-items: flex-start;
     }
 }
+
+.message-importance-competences {
+    margin: 14px 0 18px 0;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(201, 161, 74, 0.30);
+    background: rgba(201, 161, 74, 0.08);
+    color: #f2eadb;
+}
+
+.message-importance-competences strong {
+    color: #f0cb78;
+}
+
+.carte-competence-detaillee {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.carte-competence-entete {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.badge-competence {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(201, 161, 74, 0.30);
+    background: rgba(255, 255, 255, 0.04);
+    color: #e9c97f;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.resume-competence {
+    color: #d9cfba;
+    line-height: 1.45;
+}
+
+.grille-infos-competence {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 10px;
+}
+
+.bloc-info-competence {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.20);
+    border: 1px solid rgba(201, 161, 74, 0.16);
+}
+
+.bloc-info-competence span {
+    color: #c7bda8;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.bloc-info-competence strong {
+    color: #f2eadb;
+    font-size: 14px;
+}
+
+.fond-modal-confirmation {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(4, 6, 10, 0.76);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.fond-modal-confirmation.visible {
+    display: flex;
+}
+
+.modal-confirmation {
+    width: min(100%, 620px);
+    border-radius: 20px;
+    border: 1px solid rgba(201, 161, 74, 0.32);
+    background: linear-gradient(180deg, rgba(27, 31, 38, 0.98), rgba(19, 22, 28, 0.98));
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
+    padding: 24px;
+    color: #f2eadb;
+}
+
+.modal-confirmation-entete {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.modal-confirmation-entete h3 {
+    margin: 0;
+    color: #f0cb78;
+    font-size: 24px;
+}
+
+.modal-confirmation-entete p {
+    margin: 0;
+    color: #d6ccb8;
+    line-height: 1.5;
+}
+
+.liste-confirmation {
+    margin: 0 0 20px 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.liste-confirmation li {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(201, 161, 74, 0.16);
+}
+
+.actions-modal-confirmation {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
 </style>
 
 <div class="bloc-formulaire">
@@ -256,28 +396,52 @@ if ($total_statistiques_actuelles > 0) {
             0 / 4 compétence(s) élémentaire(s) sélectionnée(s)
         </div>
 
-        <form method="post" action="index.php" class="formulaire-avec-chargement formulaire-limite-choix" data-max-selection="4">
+        <form method="post" action="index.php" class="formulaire-avec-chargement formulaire-limite-choix formulaire-confirmation-competences" data-max-selection="4" data-type-confirmation="elementaires">
             <input type="hidden" name="action" value="creation_personnage_etape_3">
+            <input type="hidden" name="confirmation_competences_elementaires" value="non">
 
             <div class="grille-competences">
                 <?php foreach ($competences_elementaires as $competence) : ?>
-                    <label class="carte-competence">
+                    <label class="carte-competence carte-competence-detaillee">
                         <input
                             type="checkbox"
                             name="competences_elementaires[]"
                             value="<?= htmlspecialchars((string) $competence['code_competence'], ENT_QUOTES, 'UTF-8'); ?>"
                             <?= in_array((string) $competence['code_competence'], $creation['competences_elementaires'] ?? [], true) ? 'checked' : ''; ?>
                         >
-                        <strong><?= htmlspecialchars((string) $competence['nom'], ENT_QUOTES, 'UTF-8'); ?></strong>
-                        <small><?= htmlspecialchars((string) $competence['resume'], ENT_QUOTES, 'UTF-8'); ?></small>
-                        <small>Coût : <?= (int) ($competence['cout_utilisation'] ?? 0); ?> — <?= htmlspecialchars((string) ($competence['ressource_utilisee'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></small>
+
+                        <div class="carte-competence-entete">
+                            <strong><?= htmlspecialchars((string) $competence['nom'], ENT_QUOTES, 'UTF-8'); ?></strong>
+                            <span class="badge-competence">Actif élémentaire</span>
+                        </div>
+
+                        <div class="resume-competence">
+                            <?= htmlspecialchars((string) $competence['resume'], ENT_QUOTES, 'UTF-8'); ?>
+                        </div>
+
+                        <div class="grille-infos-competence">
+                            <div class="bloc-info-competence">
+                                <span>Coût</span>
+                                <strong><?= (int) ($competence['cout_utilisation'] ?? 0); ?></strong>
+                            </div>
+
+                            <div class="bloc-info-competence">
+                                <span>Ressource</span>
+                                <strong><?= htmlspecialchars((string) ($competence['ressource_utilisee'] ?? 'Non renseignée'), ENT_QUOTES, 'UTF-8'); ?></strong>
+                            </div>
+
+                            <div class="bloc-info-competence">
+                                <span>Choix</span>
+                                <strong>Définitif au départ</strong>
+                            </div>
+                        </div>
                     </label>
                 <?php endforeach; ?>
             </div>
 
-            <p class="texte-explicatif">
-                Ce choix est définitif. Pour modifier une compétence plus tard, il faudra consulter un maître spécialisé.
-            </p>
+            <div class="message-importance-competences">
+                <strong>Attention :</strong> les compétences élémentaires sont un choix important. Elles ne pourront pas être changées librement. Un maître spécialisé sera nécessaire et elles reviendront niveau 1.
+            </div>
 
             <button type="submit">Valider les compétences élémentaires</button>
         </form>
@@ -296,28 +460,52 @@ if ($total_statistiques_actuelles > 0) {
             0 / 3 compétence(s) neutre(s) sélectionnée(s)
         </div>
 
-        <form method="post" action="index.php" class="formulaire-avec-chargement formulaire-limite-choix" data-max-selection="3">
+        <form method="post" action="index.php" class="formulaire-avec-chargement formulaire-limite-choix formulaire-confirmation-competences" data-max-selection="3" data-type-confirmation="neutres">
             <input type="hidden" name="action" value="creation_personnage_etape_4">
+            <input type="hidden" name="confirmation_competences_neutres" value="non">
 
             <div class="grille-competences">
                 <?php foreach ($competences_neutres as $competence) : ?>
-                    <label class="carte-competence">
+                    <label class="carte-competence carte-competence-detaillee">
                         <input
                             type="checkbox"
                             name="competences_neutres[]"
                             value="<?= htmlspecialchars((string) $competence['code_competence'], ENT_QUOTES, 'UTF-8'); ?>"
                             <?= in_array((string) $competence['code_competence'], $creation['competences_neutres'] ?? [], true) ? 'checked' : ''; ?>
                         >
-                        <strong><?= htmlspecialchars((string) $competence['nom'], ENT_QUOTES, 'UTF-8'); ?></strong>
-                        <small><?= htmlspecialchars((string) $competence['resume'], ENT_QUOTES, 'UTF-8'); ?></small>
-                        <small>Progression : <?= htmlspecialchars((string) ($competence['declencheur_progression'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></small>
+
+                        <div class="carte-competence-entete">
+                            <strong><?= htmlspecialchars((string) $competence['nom'], ENT_QUOTES, 'UTF-8'); ?></strong>
+                            <span class="badge-competence">Neutre évolutive</span>
+                        </div>
+
+                        <div class="resume-competence">
+                            <?= htmlspecialchars((string) $competence['resume'], ENT_QUOTES, 'UTF-8'); ?>
+                        </div>
+
+                        <div class="grille-infos-competence">
+                            <div class="bloc-info-competence">
+                                <span>Type</span>
+                                <strong>Progression naturelle</strong>
+                            </div>
+
+                            <div class="bloc-info-competence">
+                                <span>Déblocage</span>
+                                <strong><?= htmlspecialchars((string) ($competence['declencheur_progression'] ?? 'Non renseigné'), ENT_QUOTES, 'UTF-8'); ?></strong>
+                            </div>
+
+                            <div class="bloc-info-competence">
+                                <span>Évolution</span>
+                                <strong>Selon vos actions</strong>
+                            </div>
+                        </div>
                     </label>
                 <?php endforeach; ?>
             </div>
 
-            <p class="texte-explicatif">
-                Ce choix est définitif. Vous pourrez les remplacer plus tard uniquement via un maître spécialisé.
-            </p>
+            <div class="message-importance-competences">
+                <strong>Information :</strong> les compétences neutres évoluent avec vos actions. Elles peuvent être débloquées et améliorées selon votre style de jeu et votre progression naturelle.
+            </div>
 
             <button type="submit">Valider les compétences neutres</button>
         </form>
@@ -438,6 +626,24 @@ if ($total_statistiques_actuelles > 0) {
     <?php endif; ?>
 </div>
 
+
+<div id="fond-modal-confirmation" class="fond-modal-confirmation" aria-hidden="true">
+    <div class="modal-confirmation" role="dialog" aria-modal="true" aria-labelledby="titre-modal-confirmation">
+        <div class="modal-confirmation-entete">
+            <h3 id="titre-modal-confirmation">Confirmation</h3>
+            <p id="texte-modal-confirmation"></p>
+        </div>
+
+        <ul id="liste-modal-confirmation" class="liste-confirmation"></ul>
+
+        <div class="actions-modal-confirmation">
+            <button type="button" id="bouton-annuler-modal" class="bouton-secondaire">Retour</button>
+            <button type="button" id="bouton-confirmer-modal">Confirmer</button>
+        </div>
+    </div>
+</div>
+
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const champSexe = document.getElementById('sexe');
@@ -448,6 +654,75 @@ document.addEventListener('DOMContentLoaded', function () {
     const blocTexte = document.getElementById('texte-apercu-avatar');
     const titreApercu = document.getElementById('titre-apercu-avatar');
     const sousTitreApercu = document.getElementById('sous-titre-apercu-avatar');
+
+    const fondModalConfirmation = document.getElementById('fond-modal-confirmation');
+    const titreModalConfirmation = document.getElementById('titre-modal-confirmation');
+    const texteModalConfirmation = document.getElementById('texte-modal-confirmation');
+    const listeModalConfirmation = document.getElementById('liste-modal-confirmation');
+    const boutonAnnulerModal = document.getElementById('bouton-annuler-modal');
+    const boutonConfirmerModal = document.getElementById('bouton-confirmer-modal');
+
+    let formulaireEnAttenteConfirmation = null;
+
+    const contenusConfirmation = {
+        elementaires: {
+            titre: '⚠️ Attention',
+            texte: 'Les compétences élémentaires sont un choix important.',
+            points: [
+                'Elles ne pourront pas être modifiées librement.',
+                'Un maître spécialisé sera nécessaire pour les changer.',
+                'En cas de changement, elles reviendront niveau 1.'
+            ],
+            nomChamp: 'confirmation_competences_elementaires'
+        },
+        neutres: {
+            titre: 'ℹ️ Information',
+            texte: 'Les compétences neutres évoluent avec vos actions.',
+            points: [
+                'Elles peuvent être débloquées et améliorées.',
+                'Elles dépendent de votre style de jeu.',
+                'Votre progression naturelle influencera leur évolution.'
+            ],
+            nomChamp: 'confirmation_competences_neutres'
+        }
+    };
+
+    function fermerModalConfirmation() {
+        if (!fondModalConfirmation) {
+            return;
+        }
+
+        fondModalConfirmation.classList.remove('visible');
+        fondModalConfirmation.setAttribute('aria-hidden', 'true');
+        formulaireEnAttenteConfirmation = null;
+    }
+
+    function ouvrirModalConfirmation(typeConfirmation, formulaire) {
+        if (!fondModalConfirmation || !titreModalConfirmation || !texteModalConfirmation || !listeModalConfirmation) {
+            return;
+        }
+
+        const contenu = contenusConfirmation[typeConfirmation];
+
+        if (!contenu) {
+            return;
+        }
+
+        formulaireEnAttenteConfirmation = formulaire;
+        titreModalConfirmation.textContent = contenu.titre;
+        texteModalConfirmation.textContent = contenu.texte;
+        listeModalConfirmation.innerHTML = '';
+
+        contenu.points.forEach(function (point) {
+            const ligne = document.createElement('li');
+            ligne.textContent = '✔ ' + point;
+            listeModalConfirmation.appendChild(ligne);
+        });
+
+        fondModalConfirmation.classList.add('visible');
+        fondModalConfirmation.setAttribute('aria-hidden', 'false');
+    }
+
 
     const elementChoisi = <?= json_encode($element_choisi, JSON_UNESCAPED_UNICODE); ?>;
     const classeChoisie = <?= json_encode($classe_choisie, JSON_UNESCAPED_UNICODE); ?>;
@@ -533,6 +808,81 @@ document.addEventListener('DOMContentLoaded', function () {
     if (champVariante) {
         champVariante.addEventListener('change', mettreAJourApercuAvatar);
     }
+
+
+    const formulairesConfirmationCompetences = document.querySelectorAll('.formulaire-confirmation-competences');
+
+    formulairesConfirmationCompetences.forEach(function (formulaire) {
+        formulaire.addEventListener('submit', function (evenement) {
+            const typeConfirmation = formulaire.dataset.typeConfirmation || '';
+            const contenu = contenusConfirmation[typeConfirmation];
+
+            if (!contenu) {
+                return;
+            }
+
+            const champConfirmation = formulaire.querySelector('input[name="' + contenu.nomChamp + '"]');
+
+            if (!champConfirmation) {
+                return;
+            }
+
+            if (champConfirmation.value === 'oui') {
+                return;
+            }
+
+            evenement.preventDefault();
+            ouvrirModalConfirmation(typeConfirmation, formulaire);
+        });
+    });
+
+    if (boutonAnnulerModal) {
+        boutonAnnulerModal.addEventListener('click', function () {
+            fermerModalConfirmation();
+        });
+    }
+
+    if (boutonConfirmerModal) {
+        boutonConfirmerModal.addEventListener('click', function () {
+            if (!formulaireEnAttenteConfirmation) {
+                fermerModalConfirmation();
+                return;
+            }
+
+            const typeConfirmation = formulaireEnAttenteConfirmation.dataset.typeConfirmation || '';
+            const contenu = contenusConfirmation[typeConfirmation];
+
+            if (!contenu) {
+                fermerModalConfirmation();
+                return;
+            }
+
+            const champConfirmation = formulaireEnAttenteConfirmation.querySelector('input[name="' + contenu.nomChamp + '"]');
+
+            if (champConfirmation) {
+                champConfirmation.value = 'oui';
+            }
+
+            const formulaireAEnvoyer = formulaireEnAttenteConfirmation;
+            fermerModalConfirmation();
+            formulaireAEnvoyer.submit();
+        });
+    }
+
+    if (fondModalConfirmation) {
+        fondModalConfirmation.addEventListener('click', function (evenement) {
+            if (evenement.target === fondModalConfirmation) {
+                fermerModalConfirmation();
+            }
+        });
+    }
+
+    document.addEventListener('keydown', function (evenement) {
+        if (evenement.key === 'Escape' && fondModalConfirmation && fondModalConfirmation.classList.contains('visible')) {
+            fermerModalConfirmation();
+        }
+    });
+
 
     mettreAJourApercuAvatar();
 });

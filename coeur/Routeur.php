@@ -290,6 +290,14 @@ class Routeur
         self::verifierCreationPersonnageActive();
         self::verifierEtapeMinimumCreationPersonnage(2);
 
+        $confirmation_elementaire = trim((string) ($_POST['confirmation_competences_elementaires'] ?? ''));
+
+        if ($confirmation_elementaire !== 'oui') {
+            $_SESSION['messages_erreur'] = ['Vous devez confirmer que vos compétences élémentaires sont un choix important avant de continuer.'];
+            $_SESSION['vue_personnage'] = 'creation_personnage';
+            self::redirigerIndex();
+        }
+
         $competences = $_POST['competences_elementaires'] ?? [];
 
         if (!is_array($competences)) {
@@ -336,6 +344,14 @@ class Routeur
         self::verifierCompteConnecte();
         self::verifierCreationPersonnageActive();
         self::verifierEtapeMinimumCreationPersonnage(3);
+
+        $confirmation_neutre = trim((string) ($_POST['confirmation_competences_neutres'] ?? ''));
+
+        if ($confirmation_neutre !== 'oui') {
+            $_SESSION['messages_erreur'] = ['Vous devez confirmer que les compétences neutres évoluent avec votre style de jeu avant de continuer.'];
+            $_SESSION['vue_personnage'] = 'creation_personnage';
+            self::redirigerIndex();
+        }
 
         $competences = $_POST['competences_neutres'] ?? [];
 

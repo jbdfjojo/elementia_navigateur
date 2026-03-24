@@ -46,7 +46,13 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             if (compteur) {
-                compteur.textContent = nombreCochees + ' / ' + maximum + ' sélectionnée(s)';
+                if (maximum === 4) {
+                    compteur.textContent = nombreCochees + ' / ' + maximum + ' compétence(s) élémentaire(s) sélectionnée(s)';
+                } else if (maximum === 3) {
+                    compteur.textContent = nombreCochees + ' / ' + maximum + ' compétence(s) neutre(s) sélectionnée(s)';
+                } else {
+                    compteur.textContent = nombreCochees + ' / ' + maximum + ' sélectionnée(s)';
+                }
                 compteur.classList.remove('valide', 'invalide');
 
                 if (nombreCochees === maximum) {
