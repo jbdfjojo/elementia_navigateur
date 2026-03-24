@@ -253,9 +253,6 @@ class Routeur
     // -----------------------------------------------------
     // Étape 2 : choix de la classe
     // -----------------------------------------------------
-    // -----------------------------------------------------
-    // Étape 2 : choix de la classe liée à l’élément
-    // -----------------------------------------------------
     private static function traiterCreationPersonnageEtape2(): void
     {
         self::verifierCompteConnecte();
@@ -280,9 +277,6 @@ class Routeur
 
     // -----------------------------------------------------
     // Étape 3 : choix de 4 compétences élémentaires
-    // -----------------------------------------------------
-    // -----------------------------------------------------
-    // Étape 3 : choix de 4 compétences élémentaires du catalogue
     // -----------------------------------------------------
     private static function traiterCreationPersonnageEtape3(PDO $connexion_base): void
     {
@@ -335,9 +329,6 @@ class Routeur
 
     // -----------------------------------------------------
     // Étape 4 : choix de 3 compétences neutres
-    // -----------------------------------------------------
-    // -----------------------------------------------------
-    // Étape 4 : choix de 3 compétences neutres du catalogue
     // -----------------------------------------------------
     private static function traiterCreationPersonnageEtape4(PDO $connexion_base): void
     {
@@ -424,21 +415,23 @@ class Routeur
             $messages_erreur[] = 'Vous devez choisir un sexe valide.';
         }
 
-        $avatars_disponibles = self::obtenirAvatarsFictifs();
-        $avatar_valide = false;
-
-        foreach ($avatars_disponibles as $avatar_disponible) {
-            if (
-                $avatar_disponible['identifiant'] === $avatar
-                && $avatar_disponible['sexe'] === $sexe
-            ) {
-                $avatar_valide = true;
-                break;
-            }
+        if (!in_array($variante_avatar, [1, 2], true)) {
+            $messages_erreur[] = 'Vous devez choisir une variante d’avatar valide.';
         }
 
-        if (!$avatar_valide) {
-            $messages_erreur[] = 'Vous devez choisir un avatar valide correspondant au sexe sélectionné.';
+        $element = (string) ($_SESSION['creation_personnage']['element'] ?? '');
+        $classe = (string) ($_SESSION['creation_personnage']['classe'] ?? '');
+
+        $avatar = self::obtenirAvatarAutomatique($element, $classe, $sexe, $variante_avatar);
+
+        if ($avatar === '') {
+            $messages_erreur[] = 'Impossible de déterminer un avatar valide pour cette combinaison.';
+        }
+
+        $chemin_avatar = self::obtenirCheminAvatarAutomatique($element, $classe, $sexe, $variante_avatar);
+
+        if ($chemin_avatar === '') {
+            $messages_erreur[] = 'Le chemin de l’avatar est invalide.';
         }
 
         $statistiques = [
@@ -545,7 +538,7 @@ class Routeur
             'nom' => $nom,
             'element' => $_SESSION['creation_personnage']['element'],
             'classe' => $_SESSION['creation_personnage']['classe'],
-            'portrait' => 'ressources/images/avatars/' . $avatar,
+            'portrait' => $chemin_avatar,
             'sexe' => $sexe,
             'region_depart' => $_SESSION['creation_personnage']['region_depart'],
             'point_de_vie' => $point_de_vie,
@@ -778,7 +771,6 @@ class Routeur
         self::redirigerIndex();
     }
 
-
     // -----------------------------------------------------
     // Suppression d’un personnage existant
     // -----------------------------------------------------
@@ -882,7 +874,6 @@ class Routeur
         return $correspondances[$element] ?? 'Elementia';
     }
 
-    
     // -----------------------------------------------------
     // Liste des classes disponibles selon l’élément choisi
     // -----------------------------------------------------
@@ -1133,70 +1124,70 @@ class Routeur
         header('Location: index.php');
         exit;
     }
-	
-	// -----------------------------------------------------
-	// Détermine automatiquement le nom du fichier avatar
-	// -----------------------------------------------------
-	public static function obtenirAvatarAutomatique(string $element, string $classe, string $sexe, int $variante = 1): string
-	{
-		if (!in_array($sexe, ['homme', 'femme'], true)) {
-			return '';
-		}
 
-		if (!in_array($variante, [1, 2], true)) {
-			$variante = 1;
-		}
+    // -----------------------------------------------------
+    // Détermine automatiquement le nom du fichier avatar
+    // -----------------------------------------------------
+    public static function obtenirAvatarAutomatique(string $element, string $classe, string $sexe, int $variante = 1): string
+    {
+        if (!in_array($sexe, ['homme', 'femme'], true)) {
+            return '';
+        }
 
-		$elements = [
-			'Feu' => 'feu',
-			'Eau' => 'eau',
-			'Air' => 'air',
-			'Terre' => 'terre'
-		];
+        if (!in_array($variante, [1, 2], true)) {
+            $variante = 1;
+        }
 
-		$classes = [
-			'Guerrier du Feu' => 'guerrier',
-			'Berserker du Feu' => 'berserker',
-			'Mage du Feu' => 'mage',
-			'Prêtre du Feu' => 'pretre',
+        $elements = [
+            'Feu' => 'feu',
+            'Eau' => 'eau',
+            'Air' => 'air',
+            'Terre' => 'terre'
+        ];
 
-			'Guerrier de l’Eau' => 'guerrier',
-			'Combattant de l’Eau' => 'berserker',
-			'Mage de l’Eau' => 'mage',
-			'Prêtre de l’Eau' => 'pretre',
+        $classes = [
+            'Guerrier du Feu' => 'guerrier',
+            'Berserker du Feu' => 'berserker',
+            'Mage du Feu' => 'mage',
+            'Prêtre du Feu' => 'pretre',
 
-			'Guerrier de l’Air' => 'guerrier',
-			'Chasseur de l’Air' => 'berserker',
-			'Mage de l’Air' => 'mage',
-			'Prêtre de l’Air' => 'pretre',
+            'Guerrier de l’Eau' => 'guerrier',
+            'Combattant de l’Eau' => 'berserker',
+            'Mage de l’Eau' => 'mage',
+            'Prêtre de l’Eau' => 'pretre',
 
-			'Guerrier de la Terre' => 'guerrier',
-			'Briseur de Terre' => 'berserker',
-			'Mage de la Terre' => 'mage',
-			'Prêtre de la Terre' => 'pretre'
-		];
+            'Guerrier de l’Air' => 'guerrier',
+            'Chasseur de l’Air' => 'berserker',
+            'Mage de l’Air' => 'mage',
+            'Prêtre de l’Air' => 'pretre',
 
-		$element_fichier = $elements[$element] ?? '';
-		$classe_fichier = $classes[$classe] ?? '';
+            'Guerrier de la Terre' => 'guerrier',
+            'Briseur de Terre' => 'berserker',
+            'Mage de la Terre' => 'mage',
+            'Prêtre de la Terre' => 'pretre'
+        ];
 
-		if ($element_fichier === '' || $classe_fichier === '') {
-			return '';
-		}
+        $element_fichier = $elements[$element] ?? '';
+        $classe_fichier = $classes[$classe] ?? '';
 
-		return $element_fichier . '_' . $classe_fichier . '_' . $sexe . '_' . $variante . '.png';
-	}
+        if ($element_fichier === '' || $classe_fichier === '') {
+            return '';
+        }
 
-	// -----------------------------------------------------
-	// Retourne le chemin complet de l’avatar automatique
-	// -----------------------------------------------------
-	public static function obtenirCheminAvatarAutomatique(string $element, string $classe, string $sexe, int $variante = 1): string
-	{
-		$avatar = self::obtenirAvatarAutomatique($element, $classe, $sexe, $variante);
+        return $element_fichier . '_' . $classe_fichier . '_' . $sexe . '_' . $variante . '.png';
+    }
 
-		if ($avatar === '') {
-			return '';
-		}
+    // -----------------------------------------------------
+    // Retourne le chemin complet de l’avatar automatique
+    // -----------------------------------------------------
+    public static function obtenirCheminAvatarAutomatique(string $element, string $classe, string $sexe, int $variante = 1): string
+    {
+        $avatar = self::obtenirAvatarAutomatique($element, $classe, $sexe, $variante);
 
-		return 'ressources/images/avatars/' . $avatar;
-	}
+        if ($avatar === '') {
+            return '';
+        }
+
+        return 'ressources/images/avatars/' . $avatar;
+    }
 }
