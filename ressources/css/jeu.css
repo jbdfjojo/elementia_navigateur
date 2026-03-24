@@ -1,15 +1,20 @@
-
 /* --------------------------------------------------------- */
 /* INTERFACE PRINCIPALE DU JEU                               */
 /* --------------------------------------------------------- */
 .page-jeu {
     width: 100%;
-    min-height: 100vh;
+    height: 100%;
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .interface-jeu-complete {
     width: 100%;
-    min-height: 100vh;
+    height: 100%;
+    min-height: 0;
+    flex: 1;
     display: flex;
     flex-direction: column;
     background: rgba(8, 8, 8, 0.94);
@@ -19,60 +24,232 @@
     flex: 1;
     min-height: 0;
     width: 100%;
+    display: flex;
 }
 
-.zone-carte-simulee {
+/* --------------------------------------------------------- */
+/* ZONE CARTE MONDE                                          */
+/* --------------------------------------------------------- */
+.zone-carte-monde {
     position: relative;
     width: 100%;
     height: 100%;
     min-height: 0;
-    background:
-        linear-gradient(rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0.42)),
-        radial-gradient(circle at center, #4e5d35 0%, #29311d 40%, #0e0f0d 100%);
+    flex: 1;
+    background: #050505;
+    overflow: hidden;
+    display: flex;
+}
+
+.carte-monde-viewport {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    flex: 1;
+    overflow: hidden;
+    background: #050505;
+}
+
+.carte-monde-camera {
+    position: absolute;
+    inset: 0;
     overflow: hidden;
 }
 
-.mini-bloc-evenements {
+.carte-monde-contenu {
     position: absolute;
-    top: 18px;
-    right: 18px;
-    width: 280px;
-    background: rgba(12, 12, 12, 0.88);
-    border: 1px solid rgba(201, 161, 74, 0.32);
-    border-radius: 12px;
-    padding: 14px;
+    top: 0;
+    left: 0;
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+}
+
+.image-carte-monde {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: none;
+    user-select: none;
+    pointer-events: none;
+}
+
+.grille-carte-monde {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: none;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.20) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.20) 1px, transparent 1px);
     z-index: 2;
 }
 
-.mini-bloc-evenements h3 {
-    color: #e0bf73;
-    margin-bottom: 10px;
+.repere-joueur-monde {
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    margin-left: -13px;
+    margin-top: -13px;
+    z-index: 5;
+    pointer-events: none;
 }
 
-.texte-centre-monde {
+.repere-joueur-noyau {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    background: radial-gradient(circle, #ffe28a 0%, #f2b93a 60%, #9d5c09 100%);
+    border: 2px solid rgba(255, 255, 255, 0.90);
+    box-shadow:
+        0 0 0 6px rgba(242, 185, 58, 0.18),
+        0 0 18px rgba(255, 215, 110, 0.55);
+}
+
+/* --------------------------------------------------------- */
+/* ANCIENS BLOCS SUR LA CARTE À MASQUER                      */
+/* --------------------------------------------------------- */
+.bloc-position-joueur,
+.bloc-aide-carte {
+    display: none !important;
+}
+
+/* --------------------------------------------------------- */
+/* BLOC INFORMATIONS JOUEUR                                  */
+/* --------------------------------------------------------- */
+.bloc-informations-joueur {
     position: absolute;
-    inset: 0;
+    top: 18px;
+    right: 18px;
+    width: 340px;
+    max-width: calc(100% - 36px);
+    background: rgba(12, 12, 12, 0.88);
+    border: 1px solid rgba(201, 161, 74, 0.32);
+    border-radius: 14px;
+    padding: 14px;
+    z-index: 8;
+    transition:
+        width 0.2s ease,
+        opacity 0.2s ease,
+        transform 0.2s ease,
+        border-radius 0.2s ease,
+        padding 0.2s ease,
+        min-height 0.2s ease;
+}
+
+.entete-bloc-informations-joueur {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.titres-bloc-informations-joueur h3 {
+    color: #e0bf73;
+    margin: 0 0 6px 0;
+}
+
+.titres-bloc-informations-joueur p {
+    color: #d8cfbb;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.bouton-reduire-bloc-informations {
+    min-width: 42px;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border-radius: 12px;
+    font-size: 24px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.contenu-bloc-informations-joueur {
+    margin-top: 14px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    gap: 12px;
+}
+
+.ligne-information-joueur {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
     align-items: center;
-    padding: 24px;
-    text-align: center;
 }
 
-.texte-centre-monde h2 {
+.ligne-information-joueur strong,
+.zone-evenements-joueur strong {
     color: #e0bf73;
-    margin-bottom: 12px;
-    font-size: 42px;
 }
 
-.texte-centre-monde p {
-    font-size: 22px;
+.ligne-information-joueur span,
+.zone-evenements-joueur p {
     color: #f2eadb;
 }
 
+.separateur-information-joueur {
+    height: 1px;
+    background: rgba(201, 161, 74, 0.20);
+}
+
+.zone-evenements-joueur {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* --------------------------------------------------------- */
+/* VERSION RÉDUITE : PETITE BULLE DISCRÈTE                   */
+/* --------------------------------------------------------- */
+.bloc-informations-joueur.reduit {
+    width: 58px;
+    min-width: 58px;
+    max-width: 58px;
+    min-height: 58px;
+    height: 58px;
+    padding: 6px;
+    border-radius: 999px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background: rgba(12, 12, 12, 0.76);
+    backdrop-filter: blur(2px);
+}
+
+.bloc-informations-joueur.reduit .entete-bloc-informations-joueur {
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+}
+
+.bloc-informations-joueur.reduit .titres-bloc-informations-joueur,
+.bloc-informations-joueur.reduit .contenu-bloc-informations-joueur {
+    display: none;
+}
+
+.bloc-informations-joueur.reduit .bouton-reduire-bloc-informations {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 999px;
+    font-size: 24px;
+    margin: 0;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.22);
+}
+
+/* --------------------------------------------------------- */
+/* BARRE DU BAS                                              */
+/* --------------------------------------------------------- */
 .barre-interface-bas {
-    flex-shrink: 0;
+    flex: 0 0 110px;
     width: 100%;
     min-height: 110px;
     display: grid;
@@ -83,6 +260,7 @@
     background: linear-gradient(180deg, rgba(35, 35, 35, 0.98) 0%, rgba(18, 18, 18, 0.98) 100%);
     border-top: 1px solid rgba(201, 161, 74, 0.35);
     box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
+    margin-top: auto;
 }
 
 .bloc-logo-bas {
@@ -118,16 +296,36 @@
 }
 
 @media (max-width: 900px) {
-    .mini-bloc-evenements {
-        position: static;
-        width: calc(100% - 20px);
-        margin: 10px;
+    .bloc-informations-joueur {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        width: auto;
+        max-width: none;
+    }
+
+    .bloc-informations-joueur.reduit {
+        left: auto;
+        width: 54px;
+        min-width: 54px;
+        max-width: 54px;
+        min-height: 54px;
+        height: 54px;
+        padding: 5px;
+    }
+
+    .bloc-informations-joueur.reduit .bouton-reduire-bloc-informations {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
     }
 
     .barre-interface-bas {
         grid-template-columns: 1fr;
         gap: 12px;
         padding: 14px;
+        min-height: auto;
+        flex-basis: auto;
     }
 
     .bloc-logo-bas {
@@ -136,13 +334,5 @@
 
     .centre-barre-interface {
         width: 100%;
-    }
-
-    .texte-centre-monde h2 {
-        font-size: 30px;
-    }
-
-    .texte-centre-monde p {
-        font-size: 18px;
     }
 }

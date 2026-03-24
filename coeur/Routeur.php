@@ -194,6 +194,13 @@ class Routeur
         if ($action === 'supprimer_personnage') {
             self::traiterSuppressionPersonnage($connexion_base);
         }
+
+        // -------------------------------------------------
+        // Retour à la sélection des personnages depuis le jeu
+        // -------------------------------------------------
+        if ($action === 'quitter_jeu_vers_selection_personnage') {
+            self::traiterRetourSelectionDepuisJeu();
+        }
     }
 
     // -----------------------------------------------------
@@ -253,6 +260,9 @@ class Routeur
     // -----------------------------------------------------
     // Étape 2 : choix de la classe
     // -----------------------------------------------------
+    // -----------------------------------------------------
+    // Étape 2 : choix de la classe liée à l’élément
+    // -----------------------------------------------------
     private static function traiterCreationPersonnageEtape2(): void
     {
         self::verifierCompteConnecte();
@@ -278,19 +288,14 @@ class Routeur
     // -----------------------------------------------------
     // Étape 3 : choix de 4 compétences élémentaires
     // -----------------------------------------------------
+    // -----------------------------------------------------
+    // Étape 3 : choix de 4 compétences élémentaires du catalogue
+    // -----------------------------------------------------
     private static function traiterCreationPersonnageEtape3(PDO $connexion_base): void
     {
         self::verifierCompteConnecte();
         self::verifierCreationPersonnageActive();
         self::verifierEtapeMinimumCreationPersonnage(2);
-
-        $confirmation_elementaire = trim((string) ($_POST['confirmation_competences_elementaires'] ?? ''));
-
-        if ($confirmation_elementaire !== 'oui') {
-            $_SESSION['messages_erreur'] = ['Vous devez confirmer que vos compétences élémentaires sont un choix important avant de continuer.'];
-            $_SESSION['vue_personnage'] = 'creation_personnage';
-            self::redirigerIndex();
-        }
 
         $competences = $_POST['competences_elementaires'] ?? [];
 
@@ -330,19 +335,14 @@ class Routeur
     // -----------------------------------------------------
     // Étape 4 : choix de 3 compétences neutres
     // -----------------------------------------------------
+    // -----------------------------------------------------
+    // Étape 4 : choix de 3 compétences neutres du catalogue
+    // -----------------------------------------------------
     private static function traiterCreationPersonnageEtape4(PDO $connexion_base): void
     {
         self::verifierCompteConnecte();
         self::verifierCreationPersonnageActive();
         self::verifierEtapeMinimumCreationPersonnage(3);
-
-        $confirmation_neutre = trim((string) ($_POST['confirmation_competences_neutres'] ?? ''));
-
-        if ($confirmation_neutre !== 'oui') {
-            $_SESSION['messages_erreur'] = ['Vous devez confirmer que les compétences neutres évoluent avec votre style de jeu avant de continuer.'];
-            $_SESSION['vue_personnage'] = 'creation_personnage';
-            self::redirigerIndex();
-        }
 
         $competences = $_POST['competences_neutres'] ?? [];
 
@@ -415,23 +415,21 @@ class Routeur
             $messages_erreur[] = 'Vous devez choisir un sexe valide.';
         }
 
-        if (!in_array($variante_avatar, [1, 2], true)) {
-            $messages_erreur[] = 'Vous devez choisir une variante d’avatar valide.';
+        $avatars_disponibles = self::obtenirAvatarsFictifs();
+        $avatar_valide = false;
+
+        foreach ($avatars_disponibles as $avatar_disponible) {
+            if (
+                $avatar_disponible['identifiant'] === $avatar
+                && $avatar_disponible['sexe'] === $sexe
+            ) {
+                $avatar_valide = true;
+                break;
+            }
         }
 
-        $element = (string) ($_SESSION['creation_personnage']['element'] ?? '');
-        $classe = (string) ($_SESSION['creation_personnage']['classe'] ?? '');
-
-        $avatar = self::obtenirAvatarAutomatique($element, $classe, $sexe, $variante_avatar);
-
-        if ($avatar === '') {
-            $messages_erreur[] = 'Impossible de déterminer un avatar valide pour cette combinaison.';
-        }
-
-        $chemin_avatar = self::obtenirCheminAvatarAutomatique($element, $classe, $sexe, $variante_avatar);
-
-        if ($chemin_avatar === '') {
-            $messages_erreur[] = 'Le chemin de l’avatar est invalide.';
+        if (!$avatar_valide) {
+            $messages_erreur[] = 'Vous devez choisir un avatar valide correspondant au sexe sélectionné.';
         }
 
         $statistiques = [
@@ -538,7 +536,7 @@ class Routeur
             'nom' => $nom,
             'element' => $_SESSION['creation_personnage']['element'],
             'classe' => $_SESSION['creation_personnage']['classe'],
-            'portrait' => $chemin_avatar,
+            'portrait' => 'ressources/images/avatars/' . $avatar,
             'sexe' => $sexe,
             'region_depart' => $_SESSION['creation_personnage']['region_depart'],
             'point_de_vie' => $point_de_vie,
@@ -771,6 +769,7 @@ class Routeur
         self::redirigerIndex();
     }
 
+
     // -----------------------------------------------------
     // Suppression d’un personnage existant
     // -----------------------------------------------------
@@ -825,6 +824,19 @@ class Routeur
     }
 
     // -----------------------------------------------------
+    // Retourne de la vue jeu vers la sélection personnage
+    // -----------------------------------------------------
+    private static function traiterRetourSelectionDepuisJeu(): void
+    {
+        self::verifierCompteConnecte();
+
+        unset($_SESSION['personnage_id'], $_SESSION['personnage_nom']);
+        $_SESSION['vue_personnage'] = 'selection_personnage';
+
+        self::redirigerIndex();
+    }
+
+    // -----------------------------------------------------
     // Vérifie qu’un compte est connecté
     // -----------------------------------------------------
     private static function verifierCompteConnecte(): void
@@ -874,6 +886,7 @@ class Routeur
         return $correspondances[$element] ?? 'Elementia';
     }
 
+    
     // -----------------------------------------------------
     // Liste des classes disponibles selon l’élément choisi
     // -----------------------------------------------------
@@ -1124,70 +1137,70 @@ class Routeur
         header('Location: index.php');
         exit;
     }
+	
+	// -----------------------------------------------------
+	// Détermine automatiquement le nom du fichier avatar
+	// -----------------------------------------------------
+	public static function obtenirAvatarAutomatique(string $element, string $classe, string $sexe, int $variante = 1): string
+	{
+		if (!in_array($sexe, ['homme', 'femme'], true)) {
+			return '';
+		}
 
-    // -----------------------------------------------------
-    // Détermine automatiquement le nom du fichier avatar
-    // -----------------------------------------------------
-    public static function obtenirAvatarAutomatique(string $element, string $classe, string $sexe, int $variante = 1): string
-    {
-        if (!in_array($sexe, ['homme', 'femme'], true)) {
-            return '';
-        }
+		if (!in_array($variante, [1, 2], true)) {
+			$variante = 1;
+		}
 
-        if (!in_array($variante, [1, 2], true)) {
-            $variante = 1;
-        }
+		$elements = [
+			'Feu' => 'feu',
+			'Eau' => 'eau',
+			'Air' => 'air',
+			'Terre' => 'terre'
+		];
 
-        $elements = [
-            'Feu' => 'feu',
-            'Eau' => 'eau',
-            'Air' => 'air',
-            'Terre' => 'terre'
-        ];
+		$classes = [
+			'Guerrier du Feu' => 'guerrier',
+			'Berserker du Feu' => 'berserker',
+			'Mage du Feu' => 'mage',
+			'Prêtre du Feu' => 'pretre',
 
-        $classes = [
-            'Guerrier du Feu' => 'guerrier',
-            'Berserker du Feu' => 'berserker',
-            'Mage du Feu' => 'mage',
-            'Prêtre du Feu' => 'pretre',
+			'Guerrier de l’Eau' => 'guerrier',
+			'Combattant de l’Eau' => 'berserker',
+			'Mage de l’Eau' => 'mage',
+			'Prêtre de l’Eau' => 'pretre',
 
-            'Guerrier de l’Eau' => 'guerrier',
-            'Combattant de l’Eau' => 'berserker',
-            'Mage de l’Eau' => 'mage',
-            'Prêtre de l’Eau' => 'pretre',
+			'Guerrier de l’Air' => 'guerrier',
+			'Chasseur de l’Air' => 'berserker',
+			'Mage de l’Air' => 'mage',
+			'Prêtre de l’Air' => 'pretre',
 
-            'Guerrier de l’Air' => 'guerrier',
-            'Chasseur de l’Air' => 'berserker',
-            'Mage de l’Air' => 'mage',
-            'Prêtre de l’Air' => 'pretre',
+			'Guerrier de la Terre' => 'guerrier',
+			'Briseur de Terre' => 'berserker',
+			'Mage de la Terre' => 'mage',
+			'Prêtre de la Terre' => 'pretre'
+		];
 
-            'Guerrier de la Terre' => 'guerrier',
-            'Briseur de Terre' => 'berserker',
-            'Mage de la Terre' => 'mage',
-            'Prêtre de la Terre' => 'pretre'
-        ];
+		$element_fichier = $elements[$element] ?? '';
+		$classe_fichier = $classes[$classe] ?? '';
 
-        $element_fichier = $elements[$element] ?? '';
-        $classe_fichier = $classes[$classe] ?? '';
+		if ($element_fichier === '' || $classe_fichier === '') {
+			return '';
+		}
 
-        if ($element_fichier === '' || $classe_fichier === '') {
-            return '';
-        }
+		return $element_fichier . '_' . $classe_fichier . '_' . $sexe . '_' . $variante . '.png';
+	}
 
-        return $element_fichier . '_' . $classe_fichier . '_' . $sexe . '_' . $variante . '.png';
-    }
+	// -----------------------------------------------------
+	// Retourne le chemin complet de l’avatar automatique
+	// -----------------------------------------------------
+	public static function obtenirCheminAvatarAutomatique(string $element, string $classe, string $sexe, int $variante = 1): string
+	{
+		$avatar = self::obtenirAvatarAutomatique($element, $classe, $sexe, $variante);
 
-    // -----------------------------------------------------
-    // Retourne le chemin complet de l’avatar automatique
-    // -----------------------------------------------------
-    public static function obtenirCheminAvatarAutomatique(string $element, string $classe, string $sexe, int $variante = 1): string
-    {
-        $avatar = self::obtenirAvatarAutomatique($element, $classe, $sexe, $variante);
+		if ($avatar === '') {
+			return '';
+		}
 
-        if ($avatar === '') {
-            return '';
-        }
-
-        return 'ressources/images/avatars/' . $avatar;
-    }
+		return 'ressources/images/avatars/' . $avatar;
+	}
 }

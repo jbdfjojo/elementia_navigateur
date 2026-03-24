@@ -1,0 +1,256 @@
+Structure du dossier
+Le numéro de série du volume est B2D9-B6DB
+C:.
+|   .gitignore
+|   architecture.txt
+|   creation_personnage.php
+|   deconnexion.php
+|   elementia.zip
+|   erreur.php
+|   index.php
+|   inscription.php
+|   jeu.php
+|   selection_personnage.php
+|   
++---coeur
+|       Controleur.php
+|       Modele.php
+|       Redirection.php
+|       Routeur.php
+|       Securite.php
+|       Session.php
+|       Utilitaire.php
+|       Vue.php
+|       
++---configuration
+|       base_de_donnees.php
+|       configuration.php
+|       constantes.php
+|       
++---controleurs
+|       ControleurConnexion.php
+|       ControleurDeconnexion.php
+|       ControleurInscription.php
+|       ControleurJeu.php
+|       ControleurPersonnage.php
+|       
++---modeles
+|       Carte.php
+|       Cellule.php
+|       Competence.php
+|       Compte.php
+|       Inventaire.php
+|       Journal.php
+|       Objet.php
+|       ParametreJoueur.php
+|       Personnage.php
+|       Quete.php
+|       
++---ressources
+|   +---css
+|   |       base.css
+|   |       connexion.css
+|   |       fenetres.css
+|   |       jeu.css
+|   |       personnages.css
+|   |       
+|   +---images
+|   |   |   .gitkeep
+|   |   |   logo.png
+|   |   |   
+|   |   +---avatars
+|   |   |       air_berserker_femme_1.png
+|   |   |       air_berserker_homme_1.png
+|   |   |       air_guerrier_femme_1.png
+|   |   |       air_guerrier_femme_2.png
+|   |   |       air_guerrier_homme_1.png
+|   |   |       air_guerrier_homme_2.png
+|   |   |       air_mage_femme_1.png
+|   |   |       air_mage_homme_1.png
+|   |   |       air_pretre_femme_1.png
+|   |   |       air_pretre_homme_1.png
+|   |   |       avatars.zip
+|   |   |       eau_berserker_femme_1.png
+|   |   |       eau_berserker_homme_1.png
+|   |   |       eau_guerrier_femme_1.png
+|   |   |       eau_guerrier_femme_2.png
+|   |   |       eau_guerrier_homme_1.png
+|   |   |       eau_guerrier_homme_2.png
+|   |   |       eau_mage_femme_1.png
+|   |   |       eau_mage_homme_1.png
+|   |   |       eau_pretre_femme_1.png
+|   |   |       eau_pretre_homme_1.png
+|   |   |       feu_berserker_femme_1.png
+|   |   |       feu_berserker_homme_1.png
+|   |   |       feu_guerrier_femme_1.png
+|   |   |       feu_guerrier_femme_2.png
+|   |   |       feu_guerrier_homme_1.png
+|   |   |       feu_guerrier_homme_2.png
+|   |   |       feu_mage_femme_1.png
+|   |   |       feu_mage_homme_1.png
+|   |   |       feu_pretre_femme_1.png
+|   |   |       feu_pretre_homme_1.png
+|   |   |       terre_berserker_femme_1.png
+|   |   |       terre_berserker_homme_1.png
+|   |   |       terre_guerrier_femme_1.png
+|   |   |       terre_guerrier_femme_2.png
+|   |   |       terre_guerrier_homme_1.png
+|   |   |       terre_guerrier_homme_2.png
+|   |   |       terre_mage_femme_1.png
+|   |   |       terre_mage_homme_1.png
+|   |   |       terre_pretre_femme_1.png
+|   |   |       terre_pretre_homme_1.png
+|   |   |       
+|   |   +---carte
+|   |   |       .gitkeep
+|   |   |       carte du monde.png
+|   |   |       
+|   |   +---fonds_dialogue
+|   |   |       .gitkeep
+|   |   |       fonds_dialogue_avant_village.png
+|   |   |       fonds_dialogue_boulangerie.png
+|   |   |       fonds_dialogue_champs.png
+|   |   |       fonds_dialogue_chemin.png
+|   |   |       fonds_dialogue_elevage.png
+|   |   |       fonds_dialogue_entrer_ville.png
+|   |   |       fonds_dialogue_forgerons.png
+|   |   |       fonds_dialogue_heboriste.png
+|   |   |       fonds_dialogue_lac_peche.png
+|   |   |       fonds_dialogue_marcher.png
+|   |   |       fonds_dialogue_pond_foret.png
+|   |   |       fonds_dialogue_resto.png
+|   |   |       fond_rectangle_choix_discutions.png
+|   |   |       fond_rectangle_choix_discutions_x3.png
+|   |   |       fond_rectangle_discutions_reponse_pnj.png
+|   |   |       fond_vide.png
+|   |   |       
+|   |   +---icones
+|   |   |       .gitkeep
+|   |   |       
+|   |   +---interface
+|   |   |       .gitkeep
+|   |   |       fonc quette.png
+|   |   |       fond_artisana.png
+|   |   |       fond_boutique.png
+|   |   |       fond_carte.png
+|   |   |       fond_chat.png
+|   |   |       fond_codex.png
+|   |   |       fond_competances.png
+|   |   |       fond_journal.png
+|   |   |       fond_paramettre.png
+|   |   |       fond_stats.png
+|   |   |       inventaire.png
+|   |   |       perso.png
+|   |   |       
+|   |   \---portraits
+|   |       |   .gitkeep
+|   |       |   
+|   |       +---brigant
+|   |       |       brigant_A.png
+|   |       |       brigant_B.png
+|   |       |       brigant_C.png
+|   |       |       brigant_D.png
+|   |       |       
+|   |       +---metier
+|   |       |       villagois_metier_aubergiste.png
+|   |       |       villagois_metier_boulanger.png
+|   |       |       villagois_metier_bucherons.png
+|   |       |       villagois_metier_fermier.png
+|   |       |       villagois_metier_forgerons.png
+|   |       |       villagois_metier_herboriste.png
+|   |       |       villagois_metier_marcher_legume.png
+|   |       |       villagois_metier_menuisier.png
+|   |       |       villagois_metier_mineur.png
+|   |       |       villagois_metier_pecheur.png
+|   |       |       villagois_metier_pecheur_2.png
+|   |       |       villagois_metier_serveuse_A.png
+|   |       |       villagois_metier_serveuse_B.png
+|   |       |       villagois_metier_tisseuse.png
+|   |       |       villagois_metier_vendeur_anbulant.png
+|   |       |       
+|   |       +---noble
+|   |       |       duc.png
+|   |       |       duchesse.png
+|   |       |       noble_file_B.png
+|   |       |       noble_fille_A.png
+|   |       |       noble_garcon_A.png
+|   |       |       noble_garcon_B.png
+|   |       |       reine.png
+|   |       |       roi.png
+|   |       |       
+|   |       \---villagois
+|   |               villagois_adulte_fille_A.png
+|   |               villagois_adulte_fille_B.png
+|   |               villagois_adulte_garcon_A.png
+|   |               villagois_enfant_fille_A.png
+|   |               villagois_enfant_fille_B.png
+|   |               villagois_enfant_fille_C.png
+|   |               villagois_enfant_fille_D.png
+|   |               villagois_enfant_garcons_B.png
+|   |               villagois_enfant_garcon_A.png
+|   |               villagois_enfant_garcon_C.png
+|   |               villagois_enfant_garcon_D.png
+|   |               villagois_enfant_garcon_E.png
+|   |               villagois_voyageur.png
+|   |               
+|   +---js
+|   |       carte.js
+|   |       connexion.js
+|   |       interface.js
+|   |       jeu.js
+|   |       personnages.js
+|   |       
+|   \---polices
+|           .gitkeep
+|           
++---sql
+|   |   donnees_depart.sql
+|   |   mise_a_jour.sql
+|   |   schema_initial.sql
+|   |   
+|   \---save_sql
+|           elementia.sql
+|           
++---stockage_temporaire
+|       .gitkeep
+|       
+\---vues
+    +---commun
+    |       entete.php
+    |       gabarit_principal.php
+    |       menu.php
+    |       messages.php
+    |       pied.php
+    |       
+    +---connexion
+    |       formulaire_connexion.php
+    |       vue_connexion.php
+    |       
+    +---erreur
+    |       page_erreur.php
+    |       
+    +---inscription
+    |       formulaire_inscription.php
+    |       vue_inscription.php
+    |       
+    +---jeu
+    |       barre_actions.php
+    |       bloc_evenements.php
+    |       fenetres_secondaires.php
+    |       interface_jeu.php
+    |       vue_jeu.php
+    |       zone_carte.php
+    |       
+    \---personnages
+        |   formulaire_creation_personnage.php
+        |   liste_personnages.php
+        |   vue_creation_personnage.php
+        |   vue_selection_personnage.php
+        |   
+        \---etapes
+                etape_1_element.php
+                etape_2_classe.php
+                etape_3_competences_elementaires.php
+                etape_4_competences_neutres.php
+                etape_5_identite_statistiques.php
+                

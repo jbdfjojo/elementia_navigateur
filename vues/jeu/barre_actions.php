@@ -4,17 +4,13 @@
     </div>
 
     <div class="centre-barre-interface">
-        <button type="button">Personnage</button>
-        <button type="button">Inventaire</button>
-        <button type="button">Compétences</button>
-        <button type="button">Quêtes</button>
-        <button type="button">Journal</button>
-        <button type="button">Paramètres</button>
-
-        <form method="post" action="index.php" class="formulaire-avec-chargement formulaire-deconnexion-jeu">
-            <input type="hidden" name="action" value="deconnexion">
-            <button type="submit" class="bouton-secondaire">Déconnexion</button>
-        </form>
+        <button type="button" class="bouton-action-jeu" data-fenetre="personnage">Personnage</button>
+        <button type="button" class="bouton-action-jeu" data-fenetre="inventaire">Inventaire</button>
+        <button type="button" class="bouton-action-jeu" data-fenetre="competences">Compétences</button>
+        <button type="button" class="bouton-action-jeu" data-fenetre="quetes">Quêtes</button>
+        <button type="button" class="bouton-action-jeu" data-fenetre="journal">Journal</button>
+        <button type="button" class="bouton-action-jeu" data-fenetre="aide">Aide</button>
+        <button type="button" class="bouton-action-jeu bouton-parametres" data-fenetre="parametres">Paramètres</button>
     </div>
 
     <div class="bloc-logo-bas bloc-logo-bas-droite">

@@ -1,16 +1,139 @@
+.fond-fenetres-jeu {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(6, 8, 10, 0.72);
+    backdrop-filter: blur(3px);
+    padding: 24px;
+}
 
-/* --------------------------------------------------------- */
-/* FENÊTRES DE JEU - BASE PRÊTE POUR LES FUTURES OUVERTURES  */
-/* --------------------------------------------------------- */
+.fond-fenetres-jeu.visible {
+    display: flex;
+}
+
 .fenetre-jeu-cachee {
     display: none;
 }
 
 .fenetre-jeu-modele {
-    position: absolute;
-    inset: 40px;
-    border-radius: 18px;
+    width: min(100%, 980px);
+    max-height: min(88vh, 900px);
+    overflow: auto;
+    border-radius: 20px;
     border: 1px solid rgba(201, 161, 74, 0.28);
-    background: rgba(14, 14, 14, 0.94);
+    background: rgba(14, 14, 14, 0.96);
     box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+}
+
+.entete-fenetre-jeu {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 22px 24px 18px 24px;
+    border-bottom: 1px solid rgba(201, 161, 74, 0.18);
+}
+
+.entete-fenetre-jeu h2 {
+    margin: 0 0 6px 0;
+    color: #e0bf73;
+}
+
+.entete-fenetre-jeu p {
+    color: #cfc6b1;
+}
+
+.bouton-fermer-fenetre {
+    min-width: 52px;
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    border-radius: 14px;
+    font-size: 30px;
+    line-height: 1;
+}
+
+.contenu-fenetre-jeu {
+    padding: 24px;
+}
+
+.grille-parametres-jeu {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.grille-aide-jeu {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.carte-parametres-jeu {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 18px;
+    border-radius: 16px;
+    border: 1px solid rgba(201, 161, 74, 0.18);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.carte-parametres-jeu h3 {
+    color: #e0bf73;
+    margin: 0 0 4px 0;
+}
+
+.carte-parametres-jeu p {
+    color: #f2eadb;
+    line-height: 1.5;
+}
+
+.formulaire-parametre-jeu {
+    margin: 0;
+}
+
+.bouton-parametre-principal,
+.bouton-parametre-secondaire,
+.bouton-petit-parametre {
+    width: 100%;
+    max-width: none;
+    align-self: stretch;
+}
+
+.ligne-option-parametre {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.ligne-valeur-parametre {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    color: #f2eadb;
+}
+
+input[type="range"] {
+    width: 100%;
+}
+
+@media (max-width: 900px) {
+    .grille-parametres-jeu,
+    .grille-aide-jeu {
+        grid-template-columns: 1fr;
+    }
+
+    .fond-fenetres-jeu {
+        padding: 12px;
+    }
+
+    .entete-fenetre-jeu,
+    .contenu-fenetre-jeu {
+        padding: 16px;
+    }
 }

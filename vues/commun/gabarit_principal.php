@@ -1,7 +1,4 @@
 <?php
-// ---------------------------------------------------------
-// RÉCUPÉRATION DES MESSAGES TEMPORAIRES
-// ---------------------------------------------------------
 $messages_erreur_affichage = $_SESSION['messages_erreur'] ?? [];
 $messages_succes_affichage = $_SESSION['messages_succes'] ?? [];
 $ancien_pseudo = $_SESSION['ancien_pseudo'] ?? '';
@@ -14,17 +11,12 @@ $est_vue_jeu = ($vue === 'jeu');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Elementia</title>
+
     <link rel="stylesheet" href="ressources/css/base.css">
+    <link rel="stylesheet" href="ressources/css/connexion.css">
+    <link rel="stylesheet" href="ressources/css/personnages.css">
+    <link rel="stylesheet" href="ressources/css/jeu.css">
     <link rel="stylesheet" href="ressources/css/fenetres.css">
-    <?php if ($vue === 'connexion' || $vue === 'inscription') : ?>
-        <link rel="stylesheet" href="ressources/css/connexion.css">
-    <?php endif; ?>
-    <?php if ($vue === 'selection_personnage' || $vue === 'creation_personnage') : ?>
-        <link rel="stylesheet" href="ressources/css/personnages.css">
-    <?php endif; ?>
-    <?php if ($vue === 'jeu') : ?>
-        <link rel="stylesheet" href="ressources/css/jeu.css">
-    <?php endif; ?>
 </head>
 <body class="<?= $est_vue_jeu ? 'body-mode-jeu' : ''; ?>">
     <div id="ecran-chargement" class="ecran-chargement">
@@ -40,6 +32,7 @@ $est_vue_jeu = ($vue === 'jeu');
             <?php if (!$est_vue_jeu) : ?>
                 <div class="zone-logo">
                     <img src="ressources/images/logo.png" alt="Logo Elementia" class="logo-principal">
+
                     <?php if ($vue === 'connexion') : ?>
                         <p class="sous-titre">Connexion du joueur</p>
                     <?php elseif ($vue === 'inscription') : ?>
@@ -85,13 +78,10 @@ $est_vue_jeu = ($vue === 'jeu');
     </main>
 
     <script src="ressources/js/interface.js"></script>
-    <?php if ($vue === 'connexion' || $vue === 'inscription') : ?>
-        <script src="ressources/js/connexion.js"></script>
-    <?php endif; ?>
-    <?php if ($vue === 'selection_personnage' || $vue === 'creation_personnage') : ?>
-        <script src="ressources/js/personnages.js"></script>
-    <?php endif; ?>
-    <?php if ($vue === 'jeu') : ?>
+    <script src="ressources/js/connexion.js"></script>
+    <script src="ressources/js/personnages.js"></script>
+
+    <?php if ($est_vue_jeu) : ?>
         <script src="ressources/js/jeu.js"></script>
         <script src="ressources/js/carte.js"></script>
     <?php endif; ?>
