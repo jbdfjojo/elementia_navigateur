@@ -1,5 +1,6 @@
+
 /* --------------------------------------------------------- */
-/* RÉINITIALISATION GLOBALE                                  */
+/* SOCLE GLOBAL                                              */
 /* --------------------------------------------------------- */
 * {
     box-sizing: border-box;
@@ -7,9 +8,11 @@
     padding: 0;
 }
 
-/* --------------------------------------------------------- */
-/* PAGE GLOBALE                                              */
-/* --------------------------------------------------------- */
+html,
+body {
+    min-height: 100%;
+}
+
 body {
     font-family: Arial, Helvetica, sans-serif;
     background: radial-gradient(circle at top, #2f2a22 0%, #141414 45%, #090909 100%);
@@ -17,8 +20,16 @@ body {
     min-height: 100vh;
 }
 
+body.body-mode-jeu {
+    overflow: hidden;
+}
+
+img {
+    max-width: 100%;
+}
+
 /* --------------------------------------------------------- */
-/* CONTENEUR PRINCIPAL                                       */
+/* STRUCTURE PRINCIPALE                                      */
 /* --------------------------------------------------------- */
 .page-authentification {
     display: flex;
@@ -28,9 +39,11 @@ body {
     padding: 30px;
 }
 
-/* --------------------------------------------------------- */
-/* CARTE PRINCIPALE                                          */
-/* --------------------------------------------------------- */
+.page-jeu-principale {
+    min-height: 100vh;
+    padding: 0;
+}
+
 .carte-authentification {
     width: 100%;
     max-width: 1100px;
@@ -45,17 +58,22 @@ body {
     max-width: 560px;
 }
 
-/* --------------------------------------------------------- */
-/* ZONE TITRE                                                */
-/* --------------------------------------------------------- */
+.carte-jeu-principale {
+    width: 100%;
+    min-height: 100vh;
+    background: rgba(10, 10, 10, 0.94);
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    position: relative;
+}
+
 .zone-logo {
     text-align: center;
     margin-bottom: 30px;
 }
 
-/* --------------------------------------------------------- */
-/* LOGO PRINCIPAL DANS LA PAGE                               */
-/* --------------------------------------------------------- */
 .logo-principal {
     max-width: 140px;
     width: 100%;
@@ -63,33 +81,13 @@ body {
     margin: 0 auto 10px auto;
 }
 
-/* --------------------------------------------------------- */
-/* ANCIEN LOGO PAGE                                          */
-/* --------------------------------------------------------- */
-.logo-jeu {
-    display: none;
-}
-
-/* --------------------------------------------------------- */
-/* TITRE PRINCIPAL TEXTE                                     */
-/* --------------------------------------------------------- */
-.zone-logo h1 {
-    font-size: 40px;
-    margin-bottom: 8px;
-    color: #e0bf73;
-    text-shadow: 0 0 12px rgba(224, 191, 115, 0.18);
-}
-
-/* --------------------------------------------------------- */
-/* SOUS-TITRE                                                */
-/* --------------------------------------------------------- */
 .sous-titre {
     color: #cfc6b1;
     font-size: 16px;
 }
 
 /* --------------------------------------------------------- */
-/* BLOCS DE FORMULAIRES                                      */
+/* BLOCS, FORMULAIRES ET BOUTONS COMMUNS                     */
 /* --------------------------------------------------------- */
 .bloc-formulaire {
     background: rgba(255, 255, 255, 0.03);
@@ -109,9 +107,6 @@ body {
     color: #d9d0bd;
 }
 
-/* --------------------------------------------------------- */
-/* FORMULAIRES                                               */
-/* --------------------------------------------------------- */
 form {
     display: flex;
     flex-direction: column;
@@ -145,9 +140,6 @@ select:focus {
     box-shadow: 0 0 12px rgba(224, 191, 115, 0.18);
 }
 
-/* --------------------------------------------------------- */
-/* BOUTONS                                                   */
-/* --------------------------------------------------------- */
 button {
     display: inline-flex;
     justify-content: center;
@@ -217,6 +209,15 @@ button:hover {
     color: #d9ffe8;
 }
 
+.boite-message-jeu {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    right: 16px;
+    z-index: 50;
+    margin-bottom: 0;
+}
+
 .lien-secondaire {
     margin-top: 6px;
     text-align: center;
@@ -225,102 +226,7 @@ button:hover {
 }
 
 /* --------------------------------------------------------- */
-/* LISTE PERSONNAGES                                         */
-/* --------------------------------------------------------- */
-.liste-personnages {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 16px;
-    margin-bottom: 20px;
-}
-
-.carte-personnage {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(201, 161, 74, 0.18);
-    border-radius: 14px;
-    padding: 16px;
-}
-
-.carte-personnage h3 {
-    color: #e0bf73;
-    margin-bottom: 12px;
-}
-
-.carte-personnage p {
-    margin-bottom: 8px;
-}
-
-.zone-actions-secondaires {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-/* --------------------------------------------------------- */
-/* PAGE DE JEU                                               */
-/* --------------------------------------------------------- */
-.page-jeu {
-    width: 100%;
-}
-
-.zone-monde {
-    width: 100%;
-}
-
-.zone-carte-simulee {
-    position: relative;
-    min-height: 520px;
-    border-radius: 18px;
-    border: 2px solid rgba(0, 0, 0, 0.65);
-    background:
-        linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)),
-        radial-gradient(circle at center, #4e5d35 0%, #29311d 40%, #0e0f0d 100%);
-    overflow: hidden;
-    margin-bottom: 20px;
-    box-shadow: inset 0 0 0 18px rgba(0, 0, 0, 0.72);
-}
-
-.mini-bloc-evenements {
-    position: absolute;
-    top: 18px;
-    right: 18px;
-    width: 260px;
-    background: rgba(12, 12, 12, 0.88);
-    border: 1px solid rgba(201, 161, 74, 0.32);
-    border-radius: 12px;
-    padding: 14px;
-}
-
-.mini-bloc-evenements h3 {
-    color: #e0bf73;
-    margin-bottom: 10px;
-}
-
-.texte-centre-monde {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 24px;
-    text-align: center;
-}
-
-.texte-centre-monde h2 {
-    color: #e0bf73;
-    margin-bottom: 12px;
-}
-
-.barre-actions-jeu {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    justify-content: center;
-}
-
-/* --------------------------------------------------------- */
-/* ÉCRAN DE CHARGEMENT                                       */
+/* CHARGEMENT GLOBAL                                         */
 /* --------------------------------------------------------- */
 .ecran-chargement {
     position: fixed;
@@ -362,156 +268,20 @@ button:hover {
 }
 
 @keyframes rotation {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 /* --------------------------------------------------------- */
-/* CRÉATION PERSONNAGE MULTI-ÉTAPES                          */
-/* --------------------------------------------------------- */
-.barre-etapes-creation {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.etape-creation {
-    padding: 10px 12px;
-    border-radius: 10px;
-    text-align: center;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(201, 161, 74, 0.15);
-    font-size: 13px;
-    color: #d8cfbb;
-}
-
-.etape-creation.active {
-    background: rgba(185, 145, 65, 0.20);
-    border-color: rgba(201, 161, 74, 0.45);
-    color: #f2eadb;
-}
-
-.grille-choix-cartes {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
-    margin-bottom: 20px;
-}
-
-.carte-choix-element,
-.carte-choix-classe,
-.carte-competence {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 16px;
-    border-radius: 14px;
-    border: 1px solid rgba(201, 161, 74, 0.20);
-    background: rgba(255, 255, 255, 0.03);
-    cursor: pointer;
-}
-
-.carte-choix-element input,
-.carte-choix-classe input,
-.carte-competence input {
-    width: auto;
-    margin-right: 6px;
-}
-
-.icone-element {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    background: rgba(185, 145, 65, 0.22);
-    color: #e0bf73;
-    font-size: 24px;
-    font-weight: bold;
-}
-
-.grille-competences {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-    gap: 14px;
-    margin-bottom: 20px;
-}
-
-.bloc-suggestion {
-    padding: 16px;
-    margin-bottom: 20px;
-    border-radius: 14px;
-    border: 1px solid rgba(201, 161, 74, 0.20);
-    background: rgba(255, 255, 255, 0.03);
-}
-
-.bloc-suggestion h3 {
-    color: #e0bf73;
-    margin-bottom: 14px;
-}
-
-.grille-suggestion {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 10px;
-}
-
-.ligne-suggestion {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.03);
-}
-
-.grille-statistiques {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-    gap: 14px;
-    margin: 16px 0 20px 0;
-}
-
-.champ-statistique {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-@media (max-width: 900px) {
-    .barre-etapes-creation {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* --------------------------------------------------------- */
-/* RESPONSIVE                                                */
+/* RESPONSIVE COMMUN                                         */
 /* --------------------------------------------------------- */
 @media (max-width: 900px) {
-    .zone-logo h1 {
-        font-size: 32px;
-    }
-
     .carte-authentification {
         padding: 22px;
     }
 
-    .mini-bloc-evenements {
-        position: static;
-        width: 100%;
-        margin: 16px;
-    }
-
-    .zone-carte-simulee {
-        min-height: 420px;
-        box-shadow: inset 0 0 0 10px rgba(0, 0, 0, 0.72);
+    .logo-principal {
+        max-width: 110px;
     }
 
     button {
@@ -519,171 +289,4 @@ button:hover {
         max-width: none;
         align-self: stretch;
     }
-
-    .logo-principal {
-        max-width: 110px;
-    }
-}
-
-/* --------------------------------------------------------- */
-/* ENTÊTE DE LA CRÉATION PERSONNAGE                          */
-/* --------------------------------------------------------- */
-.zone-entete-creation {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 18px;
-    flex-wrap: wrap;
-}
-
-.zone-annulation-creation {
-    margin: 0;
-}
-
-/* --------------------------------------------------------- */
-/* VARIANTES VISUELLES DES ÉLÉMENTS                          */
-/* --------------------------------------------------------- */
-.element-feu {
-    border-color: rgba(255, 110, 70, 0.45);
-    background: rgba(120, 35, 20, 0.20);
-}
-
-.element-eau {
-    border-color: rgba(80, 170, 255, 0.45);
-    background: rgba(20, 55, 120, 0.20);
-}
-
-.element-air {
-    border-color: rgba(180, 220, 255, 0.45);
-    background: rgba(70, 95, 120, 0.20);
-}
-
-.element-terre {
-    border-color: rgba(110, 185, 90, 0.45);
-    background: rgba(45, 85, 30, 0.20);
-}
-
-/* --------------------------------------------------------- */
-/* COMPTEURS DE SÉLECTION                                    */
-/* --------------------------------------------------------- */
-.compteur-selection,
-.compteur-statistiques {
-    padding: 12px 14px;
-    border-radius: 12px;
-    margin-bottom: 16px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(201, 161, 74, 0.20);
-    color: #f2eadb;
-    font-weight: bold;
-}
-
-.compteur-selection.valide,
-.compteur-statistiques.valide {
-    background: rgba(25, 120, 60, 0.20);
-    border-color: rgba(100, 255, 160, 0.35);
-    color: #d9ffe8;
-}
-
-.compteur-selection.invalide,
-.compteur-statistiques.invalide {
-    background: rgba(120, 25, 25, 0.20);
-    border-color: rgba(255, 100, 100, 0.35);
-    color: #ffd1d1;
-}
-
-.compteur-statistiques.attention {
-    background: rgba(185, 145, 65, 0.16);
-    border-color: rgba(201, 161, 74, 0.35);
-    color: #f2eadb;
-}
-
-/* --------------------------------------------------------- */
-/* GRILLE DES AVATARS                                        */
-/* --------------------------------------------------------- */
-.grille-avatars {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 16px;
-    margin: 12px 0 20px 0;
-}
-
-.carte-avatar {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    padding: 14px;
-    border-radius: 14px;
-    border: 1px solid rgba(201, 161, 74, 0.20);
-    background: rgba(255, 255, 255, 0.03);
-    cursor: pointer;
-    text-align: center;
-}
-
-.carte-avatar input[type="radio"] {
-    width: auto;
-}
-
-.cadre-avatar-image {
-    width: 100px;
-    height: 120px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 2px solid rgba(201, 161, 74, 0.35);
-    border-radius: 14px;
-    background: rgba(0, 0, 0, 0.28);
-    overflow: hidden;
-    padding: 6px;
-}
-
-.image-avatar {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    display: block;
-}
-
-/* --------------------------------------------------------- */
-/* AVATAR DANS LA LISTE DES PERSONNAGES                      */
-/* --------------------------------------------------------- */
-.cadre-avatar-liste {
-    width: 90px;
-    height: 110px;
-    margin: 0 auto 14px auto;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 2px solid rgba(201, 161, 74, 0.35);
-    border-radius: 14px;
-    background: rgba(0, 0, 0, 0.28);
-    overflow: hidden;
-    padding: 6px;
-}
-
-.avatar-personnage-liste {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    display: block;
-}
-
-.zone-actions-carte-personnage {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 14px;
-}
-
-
-/* --------------------------------------------------------- */
-/* MODAL DE CONFIRMATION DES COMPÉTENCES                     */
-/* --------------------------------------------------------- */
-.fond-modal-confirmation {
-    backdrop-filter: blur(3px);
-}
-
-.modal-confirmation button {
-    min-width: 140px;
 }

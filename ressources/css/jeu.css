@@ -1,0 +1,148 @@
+
+/* --------------------------------------------------------- */
+/* INTERFACE PRINCIPALE DU JEU                               */
+/* --------------------------------------------------------- */
+.page-jeu {
+    width: 100%;
+    min-height: 100vh;
+}
+
+.interface-jeu-complete {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: rgba(8, 8, 8, 0.94);
+}
+
+.zone-monde {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+}
+
+.zone-carte-simulee {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    background:
+        linear-gradient(rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0.42)),
+        radial-gradient(circle at center, #4e5d35 0%, #29311d 40%, #0e0f0d 100%);
+    overflow: hidden;
+}
+
+.mini-bloc-evenements {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    width: 280px;
+    background: rgba(12, 12, 12, 0.88);
+    border: 1px solid rgba(201, 161, 74, 0.32);
+    border-radius: 12px;
+    padding: 14px;
+    z-index: 2;
+}
+
+.mini-bloc-evenements h3 {
+    color: #e0bf73;
+    margin-bottom: 10px;
+}
+
+.texte-centre-monde {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+    text-align: center;
+}
+
+.texte-centre-monde h2 {
+    color: #e0bf73;
+    margin-bottom: 12px;
+    font-size: 42px;
+}
+
+.texte-centre-monde p {
+    font-size: 22px;
+    color: #f2eadb;
+}
+
+.barre-interface-bas {
+    flex-shrink: 0;
+    width: 100%;
+    min-height: 110px;
+    display: grid;
+    grid-template-columns: 120px 1fr 120px;
+    align-items: center;
+    gap: 18px;
+    padding: 12px 18px;
+    background: linear-gradient(180deg, rgba(35, 35, 35, 0.98) 0%, rgba(18, 18, 18, 0.98) 100%);
+    border-top: 1px solid rgba(201, 161, 74, 0.35);
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.bloc-logo-bas {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo-interface-bas {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    display: block;
+}
+
+.centre-barre-interface {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.centre-barre-interface button,
+.centre-barre-interface .bouton-secondaire {
+    min-width: 150px;
+    max-width: none;
+    align-self: center;
+}
+
+.formulaire-deconnexion-jeu {
+    margin: 0;
+}
+
+@media (max-width: 900px) {
+    .mini-bloc-evenements {
+        position: static;
+        width: calc(100% - 20px);
+        margin: 10px;
+    }
+
+    .barre-interface-bas {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 14px;
+    }
+
+    .bloc-logo-bas {
+        display: none;
+    }
+
+    .centre-barre-interface {
+        width: 100%;
+    }
+
+    .texte-centre-monde h2 {
+        font-size: 30px;
+    }
+
+    .texte-centre-monde p {
+        font-size: 18px;
+    }
+}

@@ -1,0 +1,11 @@
+
+/* --------------------------------------------------------- */
+/* STYLES DÉDIÉS À LA CONNEXION ET À L’INSCRIPTION           */
+/* --------------------------------------------------------- */
+.page-authentification .bloc-formulaire {
+    max-width: 100%;
+}
+
+.page-authentification .bloc-formulaire form + .lien-secondaire {
+    margin-top: 14px;
+}

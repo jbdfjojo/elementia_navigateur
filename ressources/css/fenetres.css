@@ -1,0 +1,16 @@
+
+/* --------------------------------------------------------- */
+/* FENÊTRES DE JEU - BASE PRÊTE POUR LES FUTURES OUVERTURES  */
+/* --------------------------------------------------------- */
+.fenetre-jeu-cachee {
+    display: none;
+}
+
+.fenetre-jeu-modele {
+    position: absolute;
+    inset: 40px;
+    border-radius: 18px;
+    border: 1px solid rgba(201, 161, 74, 0.28);
+    background: rgba(14, 14, 14, 0.94);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+}

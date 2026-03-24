@@ -1,0 +1,445 @@
+
+/* --------------------------------------------------------- */
+/* LISTE DES PERSONNAGES                                     */
+/* --------------------------------------------------------- */
+.liste-personnages {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.carte-personnage {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(201, 161, 74, 0.18);
+    border-radius: 14px;
+    padding: 16px;
+}
+
+.carte-personnage h3 {
+    color: #e0bf73;
+    margin-bottom: 12px;
+}
+
+.carte-personnage p {
+    margin-bottom: 8px;
+}
+
+.zone-actions-secondaires,
+.zone-actions-carte-personnage {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.zone-actions-secondaires {
+    gap: 12px;
+}
+
+.cadre-avatar-liste {
+    width: 90px;
+    height: 110px;
+    margin: 0 auto 14px auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid rgba(201, 161, 74, 0.35);
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.28);
+    overflow: hidden;
+    padding: 6px;
+}
+
+.avatar-personnage-liste {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+/* --------------------------------------------------------- */
+/* CRÉATION PERSONNAGE                                       */
+/* --------------------------------------------------------- */
+.zone-entete-creation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+
+.zone-annulation-creation {
+    margin: 0;
+}
+
+.barre-etapes-creation {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.etape-creation {
+    padding: 10px 12px;
+    border-radius: 10px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(201, 161, 74, 0.15);
+    font-size: 13px;
+    color: #d8cfbb;
+}
+
+.etape-creation.active {
+    background: rgba(185, 145, 65, 0.20);
+    border-color: rgba(201, 161, 74, 0.45);
+    color: #f2eadb;
+}
+
+.grille-choix-cartes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.carte-choix-element,
+.carte-choix-classe,
+.carte-competence,
+.carte-avatar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(201, 161, 74, 0.20);
+    background: rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+}
+
+.carte-choix-element input,
+.carte-choix-classe input,
+.carte-competence input,
+.carte-avatar input[type="radio"] {
+    width: auto;
+    margin-right: 6px;
+}
+
+.icone-element {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: rgba(185, 145, 65, 0.22);
+    color: #e0bf73;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.element-feu {
+    border-color: rgba(255, 110, 70, 0.45);
+    background: rgba(120, 35, 20, 0.20);
+}
+
+.element-eau {
+    border-color: rgba(80, 170, 255, 0.45);
+    background: rgba(20, 55, 120, 0.20);
+}
+
+.element-air {
+    border-color: rgba(180, 220, 255, 0.45);
+    background: rgba(70, 95, 120, 0.20);
+}
+
+.element-terre {
+    border-color: rgba(110, 185, 90, 0.45);
+    background: rgba(45, 85, 30, 0.20);
+}
+
+.grille-competences {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.compteur-selection,
+.compteur-statistiques {
+    padding: 12px 14px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(201, 161, 74, 0.20);
+    color: #f2eadb;
+    font-weight: bold;
+}
+
+.compteur-selection.valide,
+.compteur-statistiques.valide {
+    background: rgba(25, 120, 60, 0.20);
+    border-color: rgba(100, 255, 160, 0.35);
+    color: #d9ffe8;
+}
+
+.compteur-selection.invalide,
+.compteur-statistiques.invalide {
+    background: rgba(120, 25, 25, 0.20);
+    border-color: rgba(255, 100, 100, 0.35);
+    color: #ffd1d1;
+}
+
+.compteur-statistiques.attention {
+    background: rgba(185, 145, 65, 0.16);
+    border-color: rgba(201, 161, 74, 0.35);
+    color: #f2eadb;
+}
+
+.bloc-suggestion {
+    padding: 16px;
+    margin-bottom: 20px;
+    border-radius: 14px;
+    border: 1px solid rgba(201, 161, 74, 0.20);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.bloc-suggestion h3 {
+    color: #e0bf73;
+    margin-bottom: 14px;
+}
+
+.grille-suggestion {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+}
+
+.ligne-suggestion {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.grille-statistiques {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 14px;
+    margin: 16px 0 20px 0;
+}
+
+.champ-statistique {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* --------------------------------------------------------- */
+/* AVATAR ET DÉTAILS DE COMPÉTENCES                          */
+/* --------------------------------------------------------- */
+.zone-apercu-avatar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 6px 0 18px 0;
+}
+
+.carre-apercu-avatar {
+    width: 140px;
+    height: 140px;
+    border: 1px solid rgba(201, 161, 74, 0.35);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 6px;
+}
+
+.image-apercu-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+    display: block;
+}
+
+.texte-apercu-avatar-vide {
+    color: #cfc6b1;
+    text-align: center;
+    font-size: 14px;
+    line-height: 1.35;
+}
+
+.texte-apercu-avatar {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.texte-apercu-avatar strong {
+    color: #e0bf73;
+}
+
+.texte-apercu-avatar small,
+.resume-competence {
+    color: #d9cfba;
+    line-height: 1.45;
+}
+
+.carte-competence-detaillee {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.carte-competence-entete {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.badge-competence {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(201, 161, 74, 0.30);
+    background: rgba(255, 255, 255, 0.04);
+    color: #e9c97f;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.grille-infos-competence {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 10px;
+}
+
+.bloc-info-competence {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.20);
+    border: 1px solid rgba(201, 161, 74, 0.16);
+}
+
+.bloc-info-competence span {
+    color: #c7bda8;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.bloc-info-competence strong {
+    color: #f2eadb;
+    font-size: 14px;
+}
+
+.message-importance-competences {
+    margin: 14px 0 18px 0;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(201, 161, 74, 0.30);
+    background: rgba(201, 161, 74, 0.08);
+    color: #f2eadb;
+}
+
+.message-importance-competences strong {
+    color: #f0cb78;
+}
+
+/* --------------------------------------------------------- */
+/* MODALE DE CONFIRMATION                                    */
+/* --------------------------------------------------------- */
+.fond-modal-confirmation {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(4, 6, 10, 0.76);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(3px);
+}
+
+.fond-modal-confirmation.visible {
+    display: flex;
+}
+
+.modal-confirmation {
+    width: min(100%, 620px);
+    border-radius: 20px;
+    border: 1px solid rgba(201, 161, 74, 0.32);
+    background: linear-gradient(180deg, rgba(27, 31, 38, 0.98), rgba(19, 22, 28, 0.98));
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
+    padding: 24px;
+    color: #f2eadb;
+}
+
+.modal-confirmation-entete {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.modal-confirmation-entete h3 {
+    margin: 0;
+    color: #f0cb78;
+    font-size: 24px;
+}
+
+.modal-confirmation-entete p {
+    margin: 0;
+    color: #d6ccb8;
+    line-height: 1.5;
+}
+
+.liste-confirmation {
+    margin: 0 0 20px 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.liste-confirmation li {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(201, 161, 74, 0.16);
+}
+
+.actions-modal-confirmation {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.modal-confirmation button {
+    min-width: 140px;
+}
+
+@media (max-width: 900px) {
+    .barre-etapes-creation {
+        grid-template-columns: 1fr;
+    }
+
+    .zone-apercu-avatar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
