@@ -16,6 +16,7 @@
         const imageCarte = document.getElementById('image-carte-monde');
         const grille = document.getElementById('grille-carte-monde');
         const surbrillance = document.getElementById('surbrillance-deplacement-monde');
+        const surbrillanceLieux = document.getElementById('surbrillance-lieux-monde');
         const repereJoueur = document.getElementById('repere-joueur-monde');
         const valeurPositionJoueur = document.getElementById('valeur-position-joueur');
         const valeurPorteeJoueur = document.getElementById('valeur-portee-joueur');
@@ -30,7 +31,7 @@
         const debugEtatPosition = document.getElementById('debug-etat-position');
         const debugJournalDeplacement = document.getElementById('debug-journal-deplacement');
 
-        if (!viewport || !contenu || !imageCarte || !grille || !surbrillance || !repereJoueur || !valeurPositionJoueur) {
+        if (!viewport || !contenu || !imageCarte || !grille || !surbrillance || !surbrillanceLieux || !repereJoueur || !valeurPositionJoueur) {
             console.error('[Elementia] DOM carte incomplet.');
             return;
         }
@@ -168,6 +169,91 @@ function obtenirGeometrieAffichee() {
     };
 }
 
+
+        function dessinerSurbrillancesLieux() {
+            surbrillanceLieux.innerHTML = '';
+
+            const geometrie = obtenirGeometrieAffichee();
+
+            donneesCases.forEach(function (caseMonde) {
+                if (caseMonde.type !== 'ville' && caseMonde.type !== 'ponton') {
+                    return;
+                }
+
+                const element = document.createElement('div');
+                const estVille = caseMonde.type === 'ville';
+
+                element.className = 'case-lieu-monde';
+                element.style.position = 'absolute';
+                element.style.left = (caseMonde.colonne * geometrie.largeurCaseAffichee) + 'px';
+                element.style.top = (caseMonde.ligne * geometrie.hauteurCaseAffichee) + 'px';
+                element.style.width = geometrie.largeurCaseAffichee + 'px';
+                element.style.height = geometrie.hauteurCaseAffichee + 'px';
+                element.style.margin = '0';
+                element.style.padding = '0';
+                element.style.boxSizing = 'border-box';
+                element.style.pointerEvents = 'none';
+                element.style.border = estVille ? '1px solid rgba(120, 220, 140, 0.85)' : '1px solid rgba(120, 190, 255, 0.85)';
+                element.style.background = estVille ? 'rgba(120, 220, 140, 0.14)' : 'rgba(120, 190, 255, 0.14)';
+                element.style.boxShadow = estVille
+                    ? 'inset 0 0 0 1px rgba(255,255,255,0.10)'
+                    : 'inset 0 0 0 1px rgba(255,255,255,0.08)';
+
+                surbrillanceLieux.appendChild(element);
+            });
+        }
+
+        function determinerTypeRencontreDepuisJet(resultatJet) {
+            if (resultatJet <= 49) {
+                return null;
+            }
+
+            if (resultatJet <= 79) {
+                return 'commun';
+            }
+
+            if (resultatJet <= 89) {
+                return 'rare';
+            }
+
+            return 'elite';
+        }
+
+        function lancerJetRencontre(typeCaseActuelle) {
+            if (typeCaseActuelle === 'ville' || typeCaseActuelle === 'ponton') {
+                ajouterLogDebug('Aucun jet de rencontre sur cette case.');
+                return;
+            }
+
+            const resultatJet = Math.floor(Math.random() * 101);
+            const typeRencontre = determinerTypeRencontreDepuisJet(resultatJet);
+
+            if (typeRencontre === null) {
+                ligneEvenementPrincipale.textContent = 'Jet de rencontre : ' + resultatJet + '/100 · Aucun monstre.';
+                ligneEvenementSecondaire.textContent = 'La zone reste calme pour le moment.';
+                ajouterLogDebug('Jet de rencontre : ' + resultatJet + '/100 · Aucun monstre.');
+                return;
+            }
+
+            if (typeRencontre === 'commun') {
+                ligneEvenementPrincipale.textContent = 'Jet de rencontre : ' + resultatJet + '/100 · Monstre commun.';
+                ligneEvenementSecondaire.textContent = 'Test génération : une rencontre de type commun doit se lancer.';
+                ajouterLogDebug('Jet de rencontre : ' + resultatJet + '/100 · Monstre commun.');
+                return;
+            }
+
+            if (typeRencontre === 'rare') {
+                ligneEvenementPrincipale.textContent = 'Jet de rencontre : ' + resultatJet + '/100 · Monstre rare.';
+                ligneEvenementSecondaire.textContent = 'Test génération : une rencontre de type rare doit se lancer.';
+                ajouterLogDebug('Jet de rencontre : ' + resultatJet + '/100 · Monstre rare.');
+                return;
+            }
+
+            ligneEvenementPrincipale.textContent = 'Jet de rencontre : ' + resultatJet + '/100 · Monstre élite.';
+            ligneEvenementSecondaire.textContent = 'Test génération : une rencontre de type élite doit se lancer.';
+            ajouterLogDebug('Jet de rencontre : ' + resultatJet + '/100 · Monstre élite.');
+        }
+
         function mettreAJourEvenements(typeCaseActuelle) {
             if (!ligneEvenementPrincipale || !ligneEvenementSecondaire) {
                 return;
@@ -246,6 +332,7 @@ function obtenirGeometrieAffichee() {
 				element.style.minHeight = '0';
 				element.style.boxSizing = 'border-box';
 				element.style.display = 'block';
+				element.style.pointerEvents = 'auto';
 
 				surbrillance.appendChild(element);
 			});
@@ -372,6 +459,7 @@ function obtenirGeometrieAffichee() {
 
             ajouterLogDebug('Déplacement validé vers ' + etatCarte.colonne + ' x ' + etatCarte.ligne + ' depuis ' + source + '.');
             ajouterLogDebug('Type de case : ' + typeCaseActuelle + '.');
+            lancerJetRencontre(typeCaseActuelle);
         }
 
         function deplacerJoueurAuClavier(directionColonne, directionLigne) {
@@ -406,6 +494,10 @@ function obtenirGeometrieAffichee() {
 
             surbrillance.style.width = etatCarte.largeurMonde + 'px';
             surbrillance.style.height = etatCarte.hauteurMonde + 'px';
+            surbrillanceLieux.style.width = etatCarte.largeurMonde + 'px';
+            surbrillanceLieux.style.height = etatCarte.hauteurMonde + 'px';
+            surbrillanceLieux.style.pointerEvents = 'none';
+            dessinerSurbrillancesLieux();
 
             etatCarte.bateauDisponible = obtenirTypeCase(etatCarte.colonne, etatCarte.ligne) === 'ponton';
 
@@ -447,6 +539,7 @@ function obtenirGeometrieAffichee() {
             if (carteDejaInitialisee) {
                 mettreAJourCamera();
                 mettreAJourRepereJoueur();
+                dessinerSurbrillancesLieux();
                 if (etatCarte.surbrillanceActive) {
                     dessinerCasesAtteignables();
                 }

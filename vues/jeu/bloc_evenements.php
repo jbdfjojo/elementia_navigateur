@@ -41,18 +41,4 @@
             <p id="ligne-evenement-secondaire">Aucune rencontre résolue pour le moment.</p>
         </div>
     </div>
-	
-    <div class="debug-deplacement-monde">
-        <h4>Debug déplacement</h4>
-
-        <button type="button" id="bouton-debug-monture">
-            Activer monture
-        </button>
-
-        <button type="button" id="bouton-debug-reinitialiser-logs">
-            Réinitialiser logs
-        </button>
-
-        <div id="debug-journal-deplacement" class="debug-journal-deplacement"></div>
-    </div>
 </div>

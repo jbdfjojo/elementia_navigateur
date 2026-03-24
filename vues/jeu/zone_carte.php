@@ -22,6 +22,7 @@
                     >
 
                     <div class="grille-carte-monde" id="grille-carte-monde" aria-hidden="true"></div>
+                    <div class="surbrillance-lieux-monde" id="surbrillance-lieux-monde" aria-hidden="true"></div>
                     <div class="surbrillance-deplacement-monde" id="surbrillance-deplacement-monde" aria-hidden="true"></div>
 
                     <div
