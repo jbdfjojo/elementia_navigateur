@@ -12,6 +12,7 @@ $creation = $_SESSION['creation_personnage'] ?? [
     'nom' => '',
     'sexe' => '',
     'avatar' => '',
+    'variante_avatar' => 1,
     'statistiques' => [
         'point_de_vie' => 0,
         'attaque' => 0,
@@ -51,7 +52,6 @@ if ($element_choisi !== '' && $classe_choisie !== '') {
 }
 
 $competences_neutres = Routeur::obtenirCompetencesNeutresCatalogue($connexion_base);
-$avatars = Routeur::obtenirAvatarsFictifs();
 $suggestion = Routeur::obtenirSuggestionStatistiques($classe_choisie);
 
 // ---------------------------------------------------------
@@ -60,12 +60,9 @@ $suggestion = Routeur::obtenirSuggestionStatistiques($classe_choisie);
 $statistiques_actuelles = $creation['statistiques'] ?? [];
 
 $total_statistiques_actuelles = 0;
-
 foreach ($statistiques_actuelles as $valeur_statistique_actuelle) {
     $total_statistiques_actuelles += (int) $valeur_statistique_actuelle;
 }
-
-$statistiques_affichees = [];
 
 if ($total_statistiques_actuelles > 0) {
     $statistiques_affichees = [
@@ -93,6 +90,65 @@ if ($total_statistiques_actuelles > 0) {
     ];
 }
 ?>
+
+<style>
+.zone-apercu-avatar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 6px 0 18px 0;
+}
+
+.carre-apercu-avatar {
+    width: 140px;
+    height: 140px;
+    border: 1px solid rgba(201, 161, 74, 0.35);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 6px;
+}
+
+.image-apercu-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+    display: block;
+}
+
+.texte-apercu-avatar-vide {
+    color: #cfc6b1;
+    text-align: center;
+    font-size: 14px;
+    line-height: 1.35;
+}
+
+.texte-apercu-avatar {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.texte-apercu-avatar strong {
+    color: #e0bf73;
+}
+
+.texte-apercu-avatar small {
+    color: #cfc6b1;
+}
+
+@media (max-width: 900px) {
+    .zone-apercu-avatar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+</style>
+
 <div class="bloc-formulaire">
     <div class="zone-entete-creation">
         <h2>Création du personnage</h2>
@@ -302,26 +358,23 @@ if ($total_statistiques_actuelles > 0) {
                 <option value="femme" <?= ($creation['sexe'] ?? '') === 'femme' ? 'selected' : ''; ?>>Femme</option>
             </select>
 
-            <label>Choix de l’avatar</label>
-            <div id="grille-avatars" class="grille-avatars">
-                <?php foreach ($avatars as $avatar) : ?>
-                    <label class="carte-avatar" data-sexe="<?= htmlspecialchars((string) $avatar['sexe'], ENT_QUOTES, 'UTF-8'); ?>">
-                        <input
-                            type="radio"
-                            name="avatar"
-                            value="<?= htmlspecialchars((string) $avatar['identifiant'], ENT_QUOTES, 'UTF-8'); ?>"
-                            <?= ($creation['avatar'] ?? '') === $avatar['identifiant'] ? 'checked' : ''; ?>
-                        >
-                        <div class="cadre-avatar-image">
-                            <img
-                                src="<?= htmlspecialchars((string) $avatar['image'], ENT_QUOTES, 'UTF-8'); ?>"
-                                alt="<?= htmlspecialchars((string) $avatar['nom'], ENT_QUOTES, 'UTF-8'); ?>"
-                                class="image-avatar"
-                            >
-                        </div>
-                        <strong><?= htmlspecialchars((string) $avatar['nom'], ENT_QUOTES, 'UTF-8'); ?></strong>
-                    </label>
-                <?php endforeach; ?>
+            <label for="variante_avatar">Variante de l’avatar</label>
+            <select id="variante_avatar" name="variante_avatar" required>
+                <option value="1" <?= ((int) ($creation['variante_avatar'] ?? 1) === 1) ? 'selected' : ''; ?>>Variante 1</option>
+                <option value="2" <?= ((int) ($creation['variante_avatar'] ?? 1) === 2) ? 'selected' : ''; ?>>Variante 2</option>
+            </select>
+
+            <label>Aperçu de l’avatar</label>
+            <div class="zone-apercu-avatar">
+                <div class="carre-apercu-avatar" id="carre-apercu-avatar">
+                    <span id="texte-apercu-avatar-vide" class="texte-apercu-avatar-vide">Choisissez le sexe puis la variante</span>
+                    <img id="image-apercu-avatar" src="" alt="Avatar automatique" class="image-apercu-avatar" style="display:none;">
+                </div>
+
+                <div class="texte-apercu-avatar" id="texte-apercu-avatar" style="display:none;">
+                    <strong id="titre-apercu-avatar"><?= htmlspecialchars($classe_choisie, ENT_QUOTES, 'UTF-8'); ?></strong>
+                    <small id="sous-titre-apercu-avatar"></small>
+                </div>
             </div>
 
             <div id="compteur-statistiques" class="compteur-statistiques">
@@ -384,3 +437,103 @@ if ($total_statistiques_actuelles > 0) {
         </form>
     <?php endif; ?>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const champSexe = document.getElementById('sexe');
+    const champVariante = document.getElementById('variante_avatar');
+    const carreApercu = document.getElementById('carre-apercu-avatar');
+    const imageApercu = document.getElementById('image-apercu-avatar');
+    const texteVide = document.getElementById('texte-apercu-avatar-vide');
+    const blocTexte = document.getElementById('texte-apercu-avatar');
+    const titreApercu = document.getElementById('titre-apercu-avatar');
+    const sousTitreApercu = document.getElementById('sous-titre-apercu-avatar');
+
+    const elementChoisi = <?= json_encode($element_choisi, JSON_UNESCAPED_UNICODE); ?>;
+    const classeChoisie = <?= json_encode($classe_choisie, JSON_UNESCAPED_UNICODE); ?>;
+
+    const mappingElement = {
+        'Feu': 'feu',
+        'Eau': 'eau',
+        'Air': 'air',
+        'Terre': 'terre'
+    };
+
+    const mappingClasse = {
+        'Guerrier du Feu': 'guerrier',
+        'Berserker du Feu': 'berserker',
+        'Mage du Feu': 'mage',
+        'Prêtre du Feu': 'pretre',
+        'Guerrier de l’Eau': 'guerrier',
+        'Combattant de l’Eau': 'berserker',
+        'Mage de l’Eau': 'mage',
+        'Prêtre de l’Eau': 'pretre',
+        'Guerrier de l’Air': 'guerrier',
+        'Chasseur de l’Air': 'berserker',
+        'Mage de l’Air': 'mage',
+        'Prêtre de l’Air': 'pretre',
+        'Guerrier de la Terre': 'guerrier',
+        'Briseur de Terre': 'berserker',
+        'Mage de la Terre': 'mage',
+        'Prêtre de la Terre': 'pretre'
+    };
+
+    function mettreAJourApercuAvatar() {
+        if (!champSexe || !champVariante || !imageApercu || !texteVide || !blocTexte || !sousTitreApercu) {
+            return;
+        }
+
+        const sexe = champSexe.value;
+        const variante = champVariante.value;
+
+        if (!sexe || !variante || !elementChoisi || !classeChoisie) {
+            imageApercu.style.display = 'none';
+            imageApercu.src = '';
+            texteVide.style.display = 'block';
+            blocTexte.style.display = 'none';
+            return;
+        }
+
+        const elementFichier = mappingElement[elementChoisi] || '';
+        const classeFichier = mappingClasse[classeChoisie] || '';
+
+        if (!elementFichier || !classeFichier) {
+            imageApercu.style.display = 'none';
+            imageApercu.src = '';
+            texteVide.style.display = 'block';
+            texteVide.textContent = 'Mapping avatar introuvable';
+            blocTexte.style.display = 'none';
+            return;
+        }
+
+        const cheminAvatar = 'ressources/images/avatars/' + elementFichier + '_' + classeFichier + '_' + sexe + '_' + variante + '.png';
+
+        imageApercu.onload = function () {
+            imageApercu.style.display = 'block';
+            texteVide.style.display = 'none';
+            blocTexte.style.display = 'flex';
+            sousTitreApercu.textContent = sexe.charAt(0).toUpperCase() + sexe.slice(1) + ' — Variante ' + variante;
+        };
+
+        imageApercu.onerror = function () {
+            imageApercu.style.display = 'none';
+            imageApercu.src = '';
+            texteVide.style.display = 'block';
+            texteVide.textContent = 'Image introuvable';
+            blocTexte.style.display = 'none';
+        };
+
+        imageApercu.src = cheminAvatar + '?v=' + Date.now();
+    }
+
+    if (champSexe) {
+        champSexe.addEventListener('change', mettreAJourApercuAvatar);
+    }
+
+    if (champVariante) {
+        champVariante.addEventListener('change', mettreAJourApercuAvatar);
+    }
+
+    mettreAJourApercuAvatar();
+});
+</script>

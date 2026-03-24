@@ -211,6 +211,7 @@ class Routeur
             'nom' => '',
             'sexe' => '',
             'avatar' => '',
+            'variante_avatar' => 1,
             'statistiques' => [
                 'point_de_vie' => 0,
                 'attaque' => 0,
@@ -377,7 +378,7 @@ class Routeur
 
         $nom = trim($_POST['nom_personnage'] ?? '');
         $sexe = trim($_POST['sexe'] ?? '');
-        $avatar = trim($_POST['avatar'] ?? '');
+        $variante_avatar = (int) ($_POST['variante_avatar'] ?? 1);
 
         $point_de_vie = (int) ($_POST['point_de_vie'] ?? 0);
         $attaque = (int) ($_POST['attaque'] ?? 0);
@@ -473,6 +474,7 @@ class Routeur
             $_SESSION['creation_personnage']['nom'] = $nom;
             $_SESSION['creation_personnage']['sexe'] = $sexe;
             $_SESSION['creation_personnage']['avatar'] = $avatar;
+            $_SESSION['creation_personnage']['variante_avatar'] = $variante_avatar;
             $_SESSION['creation_personnage']['statistiques'] = $statistiques;
             $_SESSION['vue_personnage'] = 'creation_personnage';
             self::redirigerIndex();
@@ -527,7 +529,7 @@ class Routeur
             'nom' => $nom,
             'element' => $_SESSION['creation_personnage']['element'],
             'classe' => $_SESSION['creation_personnage']['classe'],
-            'portrait' => self::obtenirCheminAvatarParIdentifiant($avatar),
+            'portrait' => 'ressources/images/avatars/' . $avatar,
             'sexe' => $sexe,
             'region_depart' => $_SESSION['creation_personnage']['region_depart'],
             'point_de_vie' => $point_de_vie,
@@ -1115,4 +1117,70 @@ class Routeur
         header('Location: index.php');
         exit;
     }
+	
+	// -----------------------------------------------------
+	// Détermine automatiquement le nom du fichier avatar
+	// -----------------------------------------------------
+	public static function obtenirAvatarAutomatique(string $element, string $classe, string $sexe, int $variante = 1): string
+	{
+		if (!in_array($sexe, ['homme', 'femme'], true)) {
+			return '';
+		}
+
+		if (!in_array($variante, [1, 2], true)) {
+			$variante = 1;
+		}
+
+		$elements = [
+			'Feu' => 'feu',
+			'Eau' => 'eau',
+			'Air' => 'air',
+			'Terre' => 'terre'
+		];
+
+		$classes = [
+			'Guerrier du Feu' => 'guerrier',
+			'Berserker du Feu' => 'berserker',
+			'Mage du Feu' => 'mage',
+			'Prêtre du Feu' => 'pretre',
+
+			'Guerrier de l’Eau' => 'guerrier',
+			'Combattant de l’Eau' => 'berserker',
+			'Mage de l’Eau' => 'mage',
+			'Prêtre de l’Eau' => 'pretre',
+
+			'Guerrier de l’Air' => 'guerrier',
+			'Chasseur de l’Air' => 'berserker',
+			'Mage de l’Air' => 'mage',
+			'Prêtre de l’Air' => 'pretre',
+
+			'Guerrier de la Terre' => 'guerrier',
+			'Briseur de Terre' => 'berserker',
+			'Mage de la Terre' => 'mage',
+			'Prêtre de la Terre' => 'pretre'
+		];
+
+		$element_fichier = $elements[$element] ?? '';
+		$classe_fichier = $classes[$classe] ?? '';
+
+		if ($element_fichier === '' || $classe_fichier === '') {
+			return '';
+		}
+
+		return $element_fichier . '_' . $classe_fichier . '_' . $sexe . '_' . $variante . '.png';
+	}
+
+	// -----------------------------------------------------
+	// Retourne le chemin complet de l’avatar automatique
+	// -----------------------------------------------------
+	public static function obtenirCheminAvatarAutomatique(string $element, string $classe, string $sexe, int $variante = 1): string
+	{
+		$avatar = self::obtenirAvatarAutomatique($element, $classe, $sexe, $variante);
+
+		if ($avatar === '') {
+			return '';
+		}
+
+		return 'ressources/images/avatars/' . $avatar;
+	}
 }

@@ -38,11 +38,7 @@ $personnages = $requete_personnages->fetchAll();
                     $chemin_avatar = '';
 
                     if (!empty($personnage['portrait'])) {
-                        if (str_starts_with($personnage['portrait'], 'ressources/')) {
-                            $chemin_avatar = $personnage['portrait'];
-                        } else {
-                            $chemin_avatar = 'ressources/images/portraits/' . ltrim($personnage['portrait'], '/');
-                        }
+                        $chemin_avatar = (string) $personnage['portrait'];
                     }
                     ?>
 
