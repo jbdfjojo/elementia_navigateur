@@ -92,8 +92,14 @@
     height: 26px;
     margin-left: -13px;
     margin-top: -13px;
-    z-index: 5;
-    pointer-events: none;
+    z-index: 6;
+    pointer-events: auto;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 0;
+    background: transparent;
+    padding: 0;
 }
 
 .repere-joueur-noyau {
@@ -231,7 +237,8 @@
 }
 
 .bloc-informations-joueur.reduit .titres-bloc-informations-joueur,
-.bloc-informations-joueur.reduit .contenu-bloc-informations-joueur {
+.bloc-informations-joueur.reduit .contenu-bloc-informations-joueur,
+.bloc-informations-joueur.reduit .debug-deplacement-monde {
     display: none;
 }
 
@@ -334,5 +341,86 @@
 
     .centre-barre-interface {
         width: 100%;
+    }
+}
+/* Surbrillance déplacement */
+
+.surbrillance-deplacement-monde {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.surbrillance-deplacement-monde.visible {
+    pointer-events: auto;
+}
+
+.case-atteignable-monde {
+    position: absolute;
+    box-sizing: border-box;
+    background-color: rgba(255, 230, 120, 0.35);
+    border: 1px solid rgba(255, 230, 120, 0.8);
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.case-atteignable-monde:hover {
+    background-color: rgba(255, 230, 120, 0.55);
+}
+
+.debug-deplacement-monde {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.debug-deplacement-monde h4 {
+    margin: 0;
+    color: #e0bf73;
+}
+
+.debug-deplacement-monde button {
+    width: 100%;
+}
+
+.grille-debug-jeu {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(280px, 1fr));
+    gap: 18px;
+    align-items: start;
+}
+
+.carte-debug-logs {
+    grid-column: 1 / -1;
+}
+
+.debug-journal-deplacement {
+    min-height: 220px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(5, 5, 5, 0.72);
+    border: 1px solid rgba(201, 161, 74, 0.18);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ligne-debug-journal {
+    color: #f2eadb;
+    font-size: 13px;
+    line-height: 1.4;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+@media (max-width: 900px) {
+    .grille-debug-jeu {
+        grid-template-columns: 1fr;
     }
 }

@@ -2,7 +2,7 @@
     <div class="entete-bloc-informations-joueur">
         <div class="titres-bloc-informations-joueur">
             <h3>Informations du joueur</h3>
-            <p>Suivi rapide de votre position et des événements.</p>
+            <p>Suivi rapide de votre position, de votre portée et de l’exploration.</p>
         </div>
 
         <button
@@ -20,15 +20,39 @@
     <div id="contenu-bloc-informations-joueur" class="contenu-bloc-informations-joueur">
         <div class="ligne-information-joueur">
             <strong>Position</strong>
-            <span id="valeur-position-joueur">Case 0 x 0</span>
+            <span id="valeur-position-joueur">Case 18 x 12</span>
+        </div>
+
+        <div class="ligne-information-joueur">
+            <strong>Déplacement</strong>
+            <span id="valeur-portee-joueur">À pied · portée 4</span>
+        </div>
+
+        <div class="ligne-information-joueur">
+            <strong>Navigation</strong>
+            <span id="valeur-navigation-joueur">À terre · sans bateau</span>
         </div>
 
         <div class="separateur-information-joueur"></div>
 
         <div class="zone-evenements-joueur">
             <strong>Événements</strong>
-            <p>Aucune quête active pour le moment.</p>
-            <p>Le monde est prêt à être exploré.</p>
+            <p id="ligne-evenement-principale">Cliquez sur votre pion pour afficher les cases atteignables.</p>
+            <p id="ligne-evenement-secondaire">Aucune rencontre résolue pour le moment.</p>
         </div>
+    </div>
+	
+    <div class="debug-deplacement-monde">
+        <h4>Debug déplacement</h4>
+
+        <button type="button" id="bouton-debug-monture">
+            Activer monture
+        </button>
+
+        <button type="button" id="bouton-debug-reinitialiser-logs">
+            Réinitialiser logs
+        </button>
+
+        <div id="debug-journal-deplacement" class="debug-journal-deplacement"></div>
     </div>
 </div>
