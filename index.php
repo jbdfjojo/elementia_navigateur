@@ -1,25 +1,13 @@
 <?php
-// ---------------------------------------------------------
-// POINT D'ENTRÉE UNIQUE DU JEU
-// ---------------------------------------------------------
 declare(strict_types=1);
 
-// ---------------------------------------------------------
-// Démarrage de la session
-// ---------------------------------------------------------
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+
 session_start();
 
-// ---------------------------------------------------------
-// Chargement de la connexion à la base de données
-// ---------------------------------------------------------
 require_once __DIR__ . '/configuration/base_de_donnees.php';
-
-// ---------------------------------------------------------
-// Chargement du routeur central
-// ---------------------------------------------------------
 require_once __DIR__ . '/coeur/Routeur.php';
 
-// ---------------------------------------------------------
-// Exécution du routeur
-// ---------------------------------------------------------
 Routeur::gerer($connexion_base);

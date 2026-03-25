@@ -19,13 +19,13 @@ $est_vue_jeu = ($vue === 'jeu');
     <link rel="stylesheet" href="ressources/css/fenetres.css">
 </head>
 <body class="<?= $est_vue_jeu ? 'body-mode-jeu' : ''; ?>">
-    <div id="ecran-chargement" class="ecran-chargement">
-        <div class="boite-chargement">
-            <img src="ressources/images/logo.png" alt="Logo Elementia" class="logo-chargement">
-            <div class="spinner-chargement"></div>
-            <p>Chargement...</p>
-        </div>
-    </div>
+    <div id="ecran-chargement" class="ecran-chargement" style="display:none !important;">
+		<div class="boite-chargement">
+			<img src="ressources/images/logo.png" alt="Logo Elementia" class="logo-chargement">
+			<div class="spinner-chargement"></div>
+			<p>Chargement...</p>
+		</div>
+	</div>
 
     <main class="<?= $est_vue_jeu ? 'page-jeu-principale' : 'page-authentification'; ?>">
         <section class="<?= $est_vue_jeu ? 'carte-jeu-principale' : 'carte-authentification'; ?> <?= (!$est_vue_jeu && ($vue === 'connexion' || $vue === 'inscription')) ? 'carte-authentification-simple' : ''; ?>">

@@ -100,6 +100,109 @@ class Routeur
         }
 
         // -------------------------------------------------
+        // Actions inventaire / équipement
+        // -------------------------------------------------
+        if ($action === 'equiper_objet_inventaire') {
+            self::verifierCompteConnecte();
+            self::verifierPersonnageActif();
+
+            require_once __DIR__ . '/../modeles/Inventaire.php';
+            require_once __DIR__ . '/../modeles/Equipement.php';
+
+            $personnage_id = (int) ($_SESSION['personnage_id'] ?? 0);
+            $instance_objet_id = (int) ($_POST['instance_objet_id'] ?? 0);
+
+            if ($instance_objet_id <= 0) {
+                $_SESSION['messages_erreur'] = ['Objet invalide.'];
+                self::redirigerIndex();
+            }
+
+            $modeleEquipement = new Equipement($connexion_base);
+
+            if (!$modeleEquipement->verifierProprieteInstance($personnage_id, $instance_objet_id)) {
+                $_SESSION['messages_erreur'] = ['Cet objet ne vous appartient pas.'];
+                self::redirigerIndex();
+            }
+
+            if ($modeleEquipement->instanceDejaEquipee($instance_objet_id)) {
+                $_SESSION['messages_erreur'] = ['Cet objet est déjà équipé.'];
+                self::redirigerIndex();
+            }
+
+            $slotCompatible = $modeleEquipement->trouverSlotLibreCompatible($personnage_id, $instance_objet_id);
+
+            if (!$slotCompatible) {
+                $_SESSION['messages_erreur'] = ['Aucun emplacement libre compatible pour cet objet.'];
+                self::redirigerIndex();
+            }
+
+            $connexion_base->beginTransaction();
+
+            try {
+                $modeleEquipement->equiperInstanceDansSlot(
+                    $personnage_id,
+                    (int) $slotCompatible['id'],
+                    $instance_objet_id
+                );
+
+                Inventaire::retirerInstance($personnage_id, $instance_objet_id);
+
+                $connexion_base->commit();
+                $_SESSION['messages_succes'] = ['Objet équipé avec succès.'];
+            } catch (Throwable $exception) {
+                if ($connexion_base->inTransaction()) {
+                    $connexion_base->rollBack();
+                }
+
+                $_SESSION['messages_erreur'] = ['Impossible d’équiper l’objet.'];
+            }
+
+            self::redirigerIndex();
+        }
+
+        if ($action === 'jeter_objet_inventaire') {
+            self::verifierCompteConnecte();
+            self::verifierPersonnageActif();
+
+            require_once __DIR__ . '/../modeles/Inventaire.php';
+            require_once __DIR__ . '/../modeles/Equipement.php';
+
+            $personnage_id = (int) ($_SESSION['personnage_id'] ?? 0);
+            $instance_objet_id = (int) ($_POST['instance_objet_id'] ?? 0);
+
+            if ($instance_objet_id <= 0) {
+                $_SESSION['messages_erreur'] = ['Objet invalide.'];
+                self::redirigerIndex();
+            }
+
+            $modeleEquipement = new Equipement($connexion_base);
+
+            if (!$modeleEquipement->verifierProprieteInstance($personnage_id, $instance_objet_id)) {
+                $_SESSION['messages_erreur'] = ['Cet objet ne vous appartient pas.'];
+                self::redirigerIndex();
+            }
+
+            $connexion_base->beginTransaction();
+
+            try {
+                $modeleEquipement->desequiperInstance($personnage_id, $instance_objet_id);
+                Inventaire::retirerInstance($personnage_id, $instance_objet_id);
+                Inventaire::supprimerInstanceObjet($personnage_id, $instance_objet_id);
+
+                $connexion_base->commit();
+                $_SESSION['messages_succes'] = ['Objet jeté avec succès.'];
+            } catch (Throwable $exception) {
+                if ($connexion_base->inTransaction()) {
+                    $connexion_base->rollBack();
+                }
+
+                $_SESSION['messages_erreur'] = ['Impossible de jeter l’objet.'];
+            }
+
+            self::redirigerIndex();
+        }
+
+        // -------------------------------------------------
         // Connexion / inscription
         // -------------------------------------------------
         if ($action === 'connexion') {
@@ -1127,6 +1230,18 @@ class Routeur
             'dexterite' => 4,
             'defense' => 2
         ];
+    }
+
+
+    // -----------------------------------------------------
+    // Vérifie qu'un personnage actif est sélectionné
+    // -----------------------------------------------------
+    private static function verifierPersonnageActif(): void
+    {
+        if (!isset($_SESSION['personnage_id']) || (int) $_SESSION['personnage_id'] <= 0) {
+            $_SESSION['messages_erreur'] = ['Aucun personnage actif sélectionné.'];
+            self::redirigerIndex();
+        }
     }
 
     // -----------------------------------------------------

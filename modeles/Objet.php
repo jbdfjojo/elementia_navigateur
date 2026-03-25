@@ -1,15 +1,31 @@
 <?php
-// ---------------------------------------------------------
-// FICHIER RÉSERVÉ À L’ÉVOLUTION DE L’ARCHITECTURE
-// ---------------------------------------------------------
-declare(strict_types=1);
+// ======================================================
+// MODELE OBJET
+// ======================================================
 
-if (!class_exists('Objet')) {
-    class Objet
+require_once __DIR__ . '/../configuration/base_de_donnees.php';
+
+class Objet
+{
+    // --------------------------------------------------
+    // Charger objet catalogue
+    // --------------------------------------------------
+    public static function charger(int $objetId)
     {
-        // -------------------------------------------------
-        // Cette classe sert de point d’entrée propre pour le
-        // futur découpage du projet en modules dédiés.
-        // -------------------------------------------------
+        global $connexion_base;
+
+        $sql = "
+            SELECT *
+            FROM catalogue_objets
+            WHERE id = :id
+        ";
+
+        $requete = $connexion_base->prepare($sql);
+
+        $requete->execute([
+            'id' => $objetId
+        ]);
+
+        return $requete->fetch();
     }
 }
