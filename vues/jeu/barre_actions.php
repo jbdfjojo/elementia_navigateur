@@ -9,7 +9,8 @@
         <button type="button" class="bouton-action-jeu" data-fenetre="competences">Compétences</button>
         <button type="button" class="bouton-action-jeu" data-fenetre="quetes">Quêtes</button>
         <button type="button" class="bouton-action-jeu" data-fenetre="journal">Journal</button>
-        <button type="button" class="bouton-action-jeu" data-fenetre="aide">Aide</button>
+        <button type="button" class="bouton-action-jeu" data-fenetre="carte">Carte</button>
+        <button type="button" class="bouton-action-jeu" data-fenetre="codex">Codex</button>
         <button type="button" class="bouton-action-jeu" data-fenetre="debug">Debug</button>
         <button type="button" class="bouton-action-jeu bouton-parametres" data-fenetre="parametres">Paramètres</button>
     </div>

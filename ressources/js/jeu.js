@@ -5,9 +5,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    const fondFenetresJeu = document.getElementById('fond-fenetres-jeu');
-    const boutonsFenetre = document.querySelectorAll('[data-fenetre]');
-    const boutonsFermeture = document.querySelectorAll('[data-fermer-fenetre="oui"]');
     const selectQualiteGraphique = document.getElementById('qualite-graphique');
     const curseurVolumeGeneral = document.getElementById('volume-general');
     const texteVolumeGeneral = document.getElementById('texte-volume-general');
@@ -16,14 +13,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const blocInformationsJoueur = document.getElementById('bloc-informations-joueur');
     const cleStockageParametres = 'elementia_parametres_jeu';
     const cleStockageBlocInformations = 'elementia_bloc_informations_reduit';
-
-    function obtenirFenetreParCle(cleFenetre) {
-        if (!cleFenetre) {
-            return null;
-        }
-
-        return document.querySelector('[data-cle-fenetre="' + cleFenetre + '"]');
-    }
 
     function lireParametresJeu() {
         try {
@@ -62,45 +51,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (texteVolumeGeneral) {
             texteVolumeGeneral.textContent = String(valeur) + '%';
         }
-    }
-
-    function fermerToutesLesFenetresJeu() {
-        const fenetres = document.querySelectorAll('[data-cle-fenetre]');
-
-        fenetres.forEach(function (fenetre) {
-            fenetre.classList.add('fenetre-jeu-cachee');
-            fenetre.setAttribute('aria-hidden', 'true');
-        });
-    }
-
-    function ouvrirFenetreJeu(cleFenetre) {
-        if (!fondFenetresJeu) {
-            return;
-        }
-
-        const fenetre = obtenirFenetreParCle(cleFenetre);
-
-        if (!fenetre) {
-            window.alert('Cette fenêtre sera branchée dans une prochaine étape : ' + cleFenetre + '.');
-            return;
-        }
-
-        fermerToutesLesFenetresJeu();
-        fenetre.classList.remove('fenetre-jeu-cachee');
-        fenetre.setAttribute('aria-hidden', 'false');
-
-        fondFenetresJeu.classList.add('visible');
-        fondFenetresJeu.setAttribute('aria-hidden', 'false');
-    }
-
-    function fermerFenetreJeu() {
-        if (!fondFenetresJeu) {
-            return;
-        }
-
-        fondFenetresJeu.classList.remove('visible');
-        fondFenetresJeu.setAttribute('aria-hidden', 'true');
-        fermerToutesLesFenetresJeu();
     }
 
     function appliquerEtatBlocInformations(estReduit) {
@@ -142,25 +92,6 @@ document.addEventListener('DOMContentLoaded', function () {
             parametresJeu.volume_general = Number(curseurVolumeGeneral.value);
             mettreAJourTexteVolume(parametresJeu.volume_general);
             sauvegarderParametresJeu(parametresJeu);
-        });
-    }
-
-    boutonsFenetre.forEach(function (bouton) {
-        bouton.addEventListener('click', function () {
-            const cleFenetre = bouton.getAttribute('data-fenetre');
-            ouvrirFenetreJeu(cleFenetre);
-        });
-    });
-
-    boutonsFermeture.forEach(function (bouton) {
-        bouton.addEventListener('click', fermerFenetreJeu);
-    });
-
-    if (fondFenetresJeu) {
-        fondFenetresJeu.addEventListener('click', function (evenement) {
-            if (evenement.target === fondFenetresJeu) {
-                fermerFenetreJeu();
-            }
         });
     }
 
@@ -206,10 +137,4 @@ document.addEventListener('DOMContentLoaded', function () {
             evenement.stopPropagation();
         });
     }
-
-    document.addEventListener('keydown', function (evenement) {
-        if (evenement.key === 'Escape' && fondFenetresJeu && fondFenetresJeu.classList.contains('visible')) {
-            fermerFenetreJeu();
-        }
-    });
 });
