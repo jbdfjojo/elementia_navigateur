@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../modeles/Personnage.php';
 require_once __DIR__ . '/../modeles/Inventaire.php';
 require_once __DIR__ . '/../modeles/Equipement.php';
+require_once __DIR__ . '/../modeles/Objet.php';
 require_once __DIR__ . '/../configuration/base_de_donnees.php';
 
 if (!class_exists('ControleurJeu')) {
@@ -32,11 +33,33 @@ class ControleurJeu
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') return;
         $action = (string) ($_POST['action'] ?? '');
         if ($action === '') return;
+
+        if ($action === 'debug_retirer_vie_fixe') {
+            Personnage::retirerVieFixe($personnageId, 50);
+            return;
+        }
+        if ($action === 'debug_retirer_vie_pourcentage') {
+            Personnage::retirerViePourcentage($personnageId, 10);
+            return;
+        }
+        if ($action === 'debug_retirer_mana_fixe') {
+            Personnage::retirerManaFixe($personnageId, 50);
+            return;
+        }
+        if ($action === 'debug_retirer_mana_pourcentage') {
+            Personnage::retirerManaPourcentage($personnageId, 10);
+            return;
+        }
+
         $instanceObjetId = (int) ($_POST['instance_objet_id'] ?? 0);
         if ($instanceObjetId <= 0) return;
         $modeleEquipement = new Equipement($connexion_base);
         if (!$modeleEquipement->verifierProprieteInstance($personnageId, $instanceObjetId)) return;
 
+        if ($action === 'utiliser_objet_inventaire') {
+            Objet::utiliserObjetInventaire($personnageId, $instanceObjetId);
+            return;
+        }
         if ($action === 'equiper_ou_remplacer_objet') {
             self::equiperOuRemplacerObjet($personnageId, $instanceObjetId, $modeleEquipement);
             return;
@@ -57,6 +80,7 @@ class ControleurJeu
         if ($action === 'jeter_objet_inventaire') {
             $connexion_base->beginTransaction();
             try {
+                $modeleEquipement->desequiperInstance($personnageId, $instanceObjetId);
                 Inventaire::retirerInstance($personnageId, $instanceObjetId);
                 Inventaire::supprimerInstanceObjet($personnageId, $instanceObjetId);
                 $connexion_base->commit();
@@ -91,9 +115,20 @@ class ControleurJeu
         try {
             if ($modeleEquipement->instanceDejaEquipee($instanceObjetId)) { $connexion_base->rollBack(); return; }
             $slotTrouve = $modeleEquipement->trouverSlotCompatiblePourCible($personnageId, $instanceObjetId, $slotCible);
-            if (!$slotTrouve || $modeleEquipement->slotOccupe($personnageId, (int)$slotTrouve['id'])) { $connexion_base->rollBack(); return; }
+            if (!$slotTrouve) { $connexion_base->rollBack(); return; }
+            $slotId = (int) $slotTrouve['id'];
+            $occupants = $modeleEquipement->listerEquipementsDansSlots($personnageId, [$slotId]);
+            foreach ($occupants as $equipementExistant) {
+                $instanceExistante = (int) ($equipementExistant['instance_objet_id'] ?? 0);
+                if ($instanceExistante > 0) {
+                    $slotLibreInventaire = Inventaire::trouverProchainSlotLibre($personnageId);
+                    if ($slotLibreInventaire === null) { $connexion_base->rollBack(); return; }
+                    $modeleEquipement->desequiperInstance($personnageId, $instanceExistante);
+                    Inventaire::ajouterInstanceDansSlot($personnageId, $instanceExistante, $slotLibreInventaire, 1);
+                }
+            }
             Inventaire::retirerInstance($personnageId, $instanceObjetId);
-            $modeleEquipement->equiperInstanceDansSlot($personnageId, (int)$slotTrouve['id'], $instanceObjetId);
+            $modeleEquipement->equiperInstanceDansSlots($personnageId, [$slotId], $instanceObjetId);
             $connexion_base->commit();
         } catch (\Throwable $erreur) {
             if ($connexion_base->inTransaction()) $connexion_base->rollBack();

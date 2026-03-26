@@ -32,8 +32,18 @@ $catalogue_debug = Objet::listerCataloguePourDebug();
         </div>
 
         <div class="carte-parametres-jeu">
+            <h3>Tests PV / PM</h3>
+            <div class="colonne-boutons-debug">
+                <form method="post" class="formulaire-debug-ressource"><input type="hidden" name="action" value="debug_retirer_vie_fixe"><button type="submit" class="bouton-parametre-principal">Retirer 50 PV</button></form>
+                <form method="post" class="formulaire-debug-ressource"><input type="hidden" name="action" value="debug_retirer_vie_pourcentage"><button type="submit" class="bouton-secondaire bouton-parametre-secondaire">Retirer 10% PV</button></form>
+                <form method="post" class="formulaire-debug-ressource"><input type="hidden" name="action" value="debug_retirer_mana_fixe"><button type="submit" class="bouton-parametre-principal">Retirer 50 PM</button></form>
+                <form method="post" class="formulaire-debug-ressource"><input type="hidden" name="action" value="debug_retirer_mana_pourcentage"><button type="submit" class="bouton-secondaire bouton-parametre-secondaire">Retirer 10% PM</button></form>
+            </div>
+        </div>
+
+        <div class="carte-parametres-jeu">
             <h3>Ajouter un objet de test</h3>
-            <form method="post" action="index.php" class="ligne-option-parametre">
+            <form method="post" class="ligne-option-parametre">
                 <input type="hidden" name="action" value="debug_ajouter_objet_inventaire">
 
                 <label for="debug-catalogue-objet">Objet</label>

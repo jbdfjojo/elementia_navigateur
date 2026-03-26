@@ -33,6 +33,14 @@ class Personnage
                 p.position_x,
                 p.position_y,
                 p.date_creation,
+                p.point_de_vie_actuel,
+                p.point_de_vie_maximum,
+                p.magie_actuelle,
+                p.magie_maximum,
+                p.vie_actuelle,
+                p.vie_max,
+                p.mana_actuel,
+                p.mana_max,
 
                 (p.point_de_vie + IFNULL(SUM(co.bonus_point_de_vie), 0)) AS point_de_vie,
                 (p.attaque + IFNULL(SUM(co.bonus_attaque), 0)) AS attaque,
@@ -65,19 +73,149 @@ class Personnage
                 p.position_y,
                 p.date_creation,
                 p.point_de_vie,
+                p.point_de_vie_actuel,
+                p.point_de_vie_maximum,
                 p.attaque,
                 p.magie,
+                p.magie_actuelle,
+                p.magie_maximum,
                 p.agilite,
                 p.intelligence,
                 p.synchronisation_elementaire,
                 p.critique,
                 p.dexterite,
-                p.defense
+                p.defense,
+                p.vie_actuelle,
+                p.vie_max,
+                p.mana_actuel,
+                p.mana_max
             LIMIT 1
         ";
 
         $requete = $connexion_base->prepare($sql);
         $requete->execute(['id' => $personnageId]);
         return $requete->fetch();
+    }
+
+    public static function chargerRessources(int $personnageId): array
+    {
+        $personnage = self::charger($personnageId) ?: [];
+        $stats = self::calculerStats($personnageId) ?: [];
+
+        $vieActuelle = array_key_exists('point_de_vie_actuel', $personnage)
+            ? (int) $personnage['point_de_vie_actuel']
+            : (int) ($personnage['vie_actuelle'] ?? 0);
+
+        $manaActuel = array_key_exists('magie_actuelle', $personnage)
+            ? (int) $personnage['magie_actuelle']
+            : (int) ($personnage['mana_actuel'] ?? 0);
+
+        $vieMax = max(
+            (int) ($personnage['point_de_vie_maximum'] ?? 0),
+            (int) ($personnage['vie_max'] ?? 0),
+            (int) ($stats['point_de_vie'] ?? 0)
+        );
+
+        $manaMax = max(
+            (int) ($personnage['magie_maximum'] ?? 0),
+            (int) ($personnage['mana_max'] ?? 0),
+            (int) ($stats['magie'] ?? 0)
+        );
+
+        if ($vieMax <= 0) {
+            $vieMax = max(1, (int) ($stats['point_de_vie'] ?? 1));
+        }
+
+        if ($manaMax <= 0) {
+            $manaMax = max(1, (int) ($stats['magie'] ?? 1));
+        }
+
+        $vieActuelle = max(0, min($vieActuelle, $vieMax));
+        $manaActuel = max(0, min($manaActuel, $manaMax));
+
+        return [
+            'vie_actuelle' => $vieActuelle,
+            'vie_max' => $vieMax,
+            'mana_actuel' => $manaActuel,
+            'mana_max' => $manaMax,
+        ];
+    }
+
+    public static function ajouterVie(int $personnageId, int $quantite): int
+    {
+        $ressources = self::chargerRessources($personnageId);
+        $nouvelleVie = min($ressources['vie_max'], $ressources['vie_actuelle'] + max(0, $quantite));
+        self::enregistrerRessources($personnageId, $nouvelleVie, $ressources['mana_actuel'], $ressources['vie_max'], $ressources['mana_max']);
+        return $nouvelleVie;
+    }
+
+    public static function ajouterMana(int $personnageId, int $quantite): int
+    {
+        $ressources = self::chargerRessources($personnageId);
+        $nouveauMana = min($ressources['mana_max'], $ressources['mana_actuel'] + max(0, $quantite));
+        self::enregistrerRessources($personnageId, $ressources['vie_actuelle'], $nouveauMana, $ressources['vie_max'], $ressources['mana_max']);
+        return $nouveauMana;
+    }
+
+    public static function retirerVieFixe(int $personnageId, int $quantite): int
+    {
+        $ressources = self::chargerRessources($personnageId);
+        $nouvelleVie = max(0, $ressources['vie_actuelle'] - max(0, $quantite));
+        self::enregistrerRessources($personnageId, $nouvelleVie, $ressources['mana_actuel'], $ressources['vie_max'], $ressources['mana_max']);
+        return $nouvelleVie;
+    }
+
+    public static function retirerViePourcentage(int $personnageId, int $pourcentage): int
+    {
+        $ressources = self::chargerRessources($personnageId);
+        $quantite = (int) ceil($ressources['vie_max'] * max(0, $pourcentage) / 100);
+        return self::retirerVieFixe($personnageId, $quantite);
+    }
+
+    public static function retirerManaFixe(int $personnageId, int $quantite): int
+    {
+        $ressources = self::chargerRessources($personnageId);
+        $nouveauMana = max(0, $ressources['mana_actuel'] - max(0, $quantite));
+        self::enregistrerRessources($personnageId, $ressources['vie_actuelle'], $nouveauMana, $ressources['vie_max'], $ressources['mana_max']);
+        return $nouveauMana;
+    }
+
+    public static function retirerManaPourcentage(int $personnageId, int $pourcentage): int
+    {
+        $ressources = self::chargerRessources($personnageId);
+        $quantite = (int) ceil($ressources['mana_max'] * max(0, $pourcentage) / 100);
+        return self::retirerManaFixe($personnageId, $quantite);
+    }
+
+    private static function enregistrerRessources(int $personnageId, int $vieActuelle, int $manaActuel, int $vieMax, int $manaMax): void
+    {
+        global $connexion_base;
+
+        $sql = "
+            UPDATE personnages
+            SET
+                point_de_vie_actuel = :point_de_vie_actuel,
+                vie_actuelle = :vie_actuelle,
+                point_de_vie_maximum = :point_de_vie_maximum,
+                vie_max = :vie_max,
+                magie_actuelle = :magie_actuelle,
+                mana_actuel = :mana_actuel,
+                magie_maximum = :magie_maximum,
+                mana_max = :mana_max
+            WHERE id = :id
+        ";
+
+        $requete = $connexion_base->prepare($sql);
+        $requete->execute([
+            'id' => $personnageId,
+            'point_de_vie_actuel' => max(0, $vieActuelle),
+            'vie_actuelle' => max(0, $vieActuelle),
+            'point_de_vie_maximum' => max(1, $vieMax),
+            'vie_max' => max(1, $vieMax),
+            'magie_actuelle' => max(0, $manaActuel),
+            'mana_actuel' => max(0, $manaActuel),
+            'magie_maximum' => max(1, $manaMax),
+            'mana_max' => max(1, $manaMax),
+        ]);
     }
 }

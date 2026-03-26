@@ -1,115 +1,234 @@
 document.addEventListener('DOMContentLoaded', function () {
-    initialiserStockageInterfaceJeu();
-    initialiserGestionnaireFenetresJeu();
-    initialiserActionsInventaire();
-    initialiserDragAndDropEquipement();
-    initialiserInteractionsInventaire();
-    initialiserInteractionsEquipement();
-    restaurerFenetresOuvertes();
+    initialiserAffichageErreursGlobales();
+
+    const ecranChargement = document.getElementById('ecran-chargement');
+
+    window.setTimeout(function () {
+        if (ecranChargement) {
+            ecranChargement.classList.add('cache');
+        }
+    }, 350);
+
+    const formulairesAvecChargement = document.querySelectorAll('.formulaire-avec-chargement');
+
+    formulairesAvecChargement.forEach(function (formulaire) {
+        formulaire.addEventListener('submit', function () {
+            if (ecranChargement) {
+                ecranChargement.classList.remove('cache');
+            }
+        });
+    });
+
+    try {
+        initialiserGestionnaireFenetresJeu();
+        initialiserOngletsInventaire();
+    } catch (erreur) {
+        afficherErreurJeu(erreur, 'Erreur pendant l\'initialisation de l\'interface');
+        throw erreur;
+    }
 });
 
-function obtenirCleFenetresOuvertes() {
-    const body = document.body;
-    const personnageId = body ? (body.dataset.personnageId || '0') : '0';
-    return 'elementia_fenetres_ouvertes_' + personnageId;
-}
+function masquerChargementBloquant() {
+    const ecranChargement = document.getElementById('ecran-chargement');
 
-function estVueJeuActive() {
-    return document.body && document.body.dataset.estVueJeu === 'oui';
-}
-
-function nettoyerToutesLesClesInterfaceJeu() {
-    const clesASupprimer = [];
-    for (let i = 0; i < window.localStorage.length; i++) {
-        const cle = window.localStorage.key(i);
-        if (cle && cle.indexOf('elementia_fenetres_ouvertes_') === 0) {
-            clesASupprimer.push(cle);
-        }
-    }
-    clesASupprimer.forEach(function (cle) { window.localStorage.removeItem(cle); });
-}
-
-function initialiserStockageInterfaceJeu() {
-    if (!estVueJeuActive()) {
-        nettoyerToutesLesClesInterfaceJeu();
-        return;
-    }
-
-    if (document.body.dataset.nettoyerInterfaceJeu === 'oui') {
-        nettoyerToutesLesClesInterfaceJeu();
+    if (ecranChargement) {
+        ecranChargement.classList.add('cache');
+        ecranChargement.style.display = 'none';
+        ecranChargement.style.visibility = 'hidden';
+        ecranChargement.style.pointerEvents = 'none';
     }
 }
 
-function memoriserFenetresOuvertes() {
-    if (!estVueJeuActive()) return;
-    const ouvertes = Array.from(document.querySelectorAll('.fenetre-jeu-modele.fenetre-jeu-ouverte')).map(function (fenetre) {
-        return fenetre.getAttribute('data-cle-fenetre');
-    }).filter(Boolean);
-    localStorage.setItem(obtenirCleFenetresOuvertes(), JSON.stringify(ouvertes));
-}
+function creerPanneauErreursSiAbsent() {
+    let panneau = document.getElementById('panneau-erreurs-js');
 
-function restaurerFenetresOuvertes() {
-    if (!estVueJeuActive()) return;
-    let ouvertes = [];
-    try {
-        ouvertes = JSON.parse(localStorage.getItem(obtenirCleFenetresOuvertes()) || '[]');
-    } catch (erreur) {
-        ouvertes = [];
+    if (panneau) {
+        return panneau;
     }
-    ouvertes.forEach(function (cle) {
-        const fenetre = document.querySelector('.fenetre-jeu-modele[data-cle-fenetre="' + cle + '"]');
-        if (!fenetre) return;
-        fenetre.classList.remove('fenetre-jeu-cachee');
-        fenetre.classList.add('fenetre-jeu-ouverte');
+
+    panneau = document.createElement('div');
+    panneau.id = 'panneau-erreurs-js';
+    panneau.style.position = 'fixed';
+    panneau.style.left = '12px';
+    panneau.style.right = '12px';
+    panneau.style.bottom = '12px';
+    panneau.style.maxHeight = '40vh';
+    panneau.style.overflow = 'auto';
+    panneau.style.zIndex = '999999';
+    panneau.style.background = 'rgba(20, 8, 8, 0.96)';
+    panneau.style.color = '#ffd7d7';
+    panneau.style.border = '2px solid #b45757';
+    panneau.style.borderRadius = '8px';
+    panneau.style.padding = '12px';
+    panneau.style.fontFamily = 'monospace';
+    panneau.style.fontSize = '13px';
+    panneau.style.whiteSpace = 'pre-wrap';
+    panneau.style.boxShadow = '0 10px 30px rgba(0,0,0,0.45)';
+
+    const titre = document.createElement('div');
+    titre.textContent = 'Erreurs JavaScript détectées';
+    titre.style.fontWeight = '700';
+    titre.style.marginBottom = '8px';
+    titre.style.color = '#ffb4b4';
+
+    const boutonFermer = document.createElement('button');
+    boutonFermer.type = 'button';
+    boutonFermer.textContent = 'Fermer';
+    boutonFermer.style.float = 'right';
+    boutonFermer.style.marginLeft = '12px';
+    boutonFermer.style.cursor = 'pointer';
+    boutonFermer.addEventListener('click', function () {
+        panneau.style.display = 'none';
     });
-    const fond = document.getElementById('fond-fenetres-jeu');
-    if (fond) fond.classList.toggle('visible', ouvertes.length > 0);
+
+    const contenu = document.createElement('div');
+    contenu.id = 'panneau-erreurs-js-contenu';
+
+    titre.appendChild(boutonFermer);
+    panneau.appendChild(titre);
+    panneau.appendChild(contenu);
+    document.body.appendChild(panneau);
+
+    return panneau;
+}
+
+function afficherErreurJeu(erreur, contexte) {
+    masquerChargementBloquant();
+
+    const panneau = creerPanneauErreursSiAbsent();
+    panneau.style.display = 'block';
+
+    const contenu = document.getElementById('panneau-erreurs-js-contenu');
+
+    let message = '';
+
+    if (contexte) {
+        message += '[' + contexte + ']\n';
+    }
+
+    if (erreur && erreur.stack) {
+        message += erreur.stack;
+    } else if (erreur && erreur.reason && erreur.reason.stack) {
+        message += erreur.reason.stack;
+    } else if (erreur && erreur.message) {
+        message += erreur.message;
+    } else if (erreur && erreur.reason) {
+        message += String(erreur.reason);
+    } else {
+        message += String(erreur);
+    }
+
+    const bloc = document.createElement('div');
+    bloc.style.borderTop = '1px solid rgba(255,255,255,0.15)';
+    bloc.style.paddingTop = '8px';
+    bloc.style.marginTop = '8px';
+    bloc.textContent = message;
+
+    contenu.appendChild(bloc);
+
+    console.error('Erreur capturée par le panneau de debug :', erreur);
+}
+
+function initialiserAffichageErreursGlobales() {
+    window.addEventListener('error', function (evenement) {
+        afficherErreurJeu(
+            evenement.error || new Error(evenement.message + ' @ ' + evenement.filename + ':' + evenement.lineno),
+            'window.error'
+        );
+    });
+
+    window.addEventListener('unhandledrejection', function (evenement) {
+        afficherErreurJeu(evenement, 'unhandledrejection');
+    });
 }
 
 function initialiserGestionnaireFenetresJeu() {
     const fond = document.getElementById('fond-fenetres-jeu');
-    if (!fond) return;
-    let zIndexCourant = 200;
-    const fenetres = Array.from(fond.querySelectorAll('.fenetre-jeu-modele'));
 
-    function mettreAJourFond() {
-        fond.classList.toggle('visible', fenetres.some(function (fenetre) { return fenetre.classList.contains('fenetre-jeu-ouverte'); }));
+    if (!fond) {
+        return;
     }
 
-    function mettreAuPremierPlan(fenetre) {
-        zIndexCourant += 1;
-        fenetre.style.zIndex = String(zIndexCourant);
-        fenetres.forEach(function (autreFenetre) { autreFenetre.classList.remove('fenetre-jeu-active'); });
+    let z = 200;
+    const fenetres = Array.from(fond.querySelectorAll('.fenetre-jeu-modele'));
+
+    function ouvertes() {
+        return fenetres.filter(function (fenetre) {
+            return fenetre.classList.contains('fenetre-jeu-ouverte');
+        });
+    }
+
+    function mettreAJourFond() {
+        fond.classList.toggle('visible', ouvertes().length > 0);
+    }
+
+    function mettrePremierPlan(fenetre) {
+        z += 1;
+        fenetre.style.zIndex = String(z);
+
+        fenetres.forEach(function (autreFenetre) {
+            autreFenetre.classList.remove('fenetre-jeu-active');
+        });
+
         fenetre.classList.add('fenetre-jeu-active');
     }
 
     function ouvrirFenetre(cle) {
-        const fenetre = fond.querySelector('.fenetre-jeu-modele[data-cle-fenetre="' + cle + '"]');
-        if (!fenetre) return;
+        const fenetre = fond.querySelector('[data-cle-fenetre="' + cle + '"]');
+
+        if (!fenetre) {
+            return;
+        }
+
         fenetre.classList.remove('fenetre-jeu-cachee');
         fenetre.classList.add('fenetre-jeu-ouverte');
-        mettreAuPremierPlan(fenetre);
+
+        mettrePremierPlan(fenetre);
         mettreAJourFond();
-        memoriserFenetresOuvertes();
     }
 
     function fermerFenetre(fenetre) {
-        if (!fenetre) return;
+        if (!fenetre) {
+            return;
+        }
+
         fenetre.classList.remove('fenetre-jeu-ouverte', 'fenetre-jeu-active');
         fenetre.classList.add('fenetre-jeu-cachee');
         fenetre.style.zIndex = '';
+
+        const encoreOuvertes = ouvertes();
+
+        if (encoreOuvertes.length > 0) {
+            const plusHaute = encoreOuvertes.reduce(function (fenetrePrecedente, fenetreActuelle) {
+                const zPrecedent = parseInt(fenetrePrecedente.style.zIndex || '0', 10);
+                const zActuel = parseInt(fenetreActuelle.style.zIndex || '0', 10);
+
+                return zActuel > zPrecedent ? fenetreActuelle : fenetrePrecedente;
+            });
+
+            plusHaute.classList.add('fenetre-jeu-active');
+        }
+
         mettreAJourFond();
-        memoriserFenetresOuvertes();
     }
 
     document.querySelectorAll('[data-fenetre]').forEach(function (bouton) {
         bouton.addEventListener('click', function (evenement) {
             evenement.preventDefault();
             evenement.stopPropagation();
+
             const cle = bouton.getAttribute('data-fenetre');
-            const fenetre = fond.querySelector('.fenetre-jeu-modele[data-cle-fenetre="' + cle + '"]');
-            if (!fenetre) return;
-            if (fenetre.classList.contains('fenetre-jeu-ouverte')) fermerFenetre(fenetre); else ouvrirFenetre(cle);
+            const fenetre = fond.querySelector('[data-cle-fenetre="' + cle + '"]');
+
+            if (!fenetre) {
+                return;
+            }
+
+            if (fenetre.classList.contains('fenetre-jeu-ouverte')) {
+                fermerFenetre(fenetre);
+            } else {
+                ouvrirFenetre(cle);
+            }
         });
     });
 
@@ -123,32 +242,51 @@ function initialiserGestionnaireFenetresJeu() {
 
     fenetres.forEach(function (fenetre) {
         fenetre.addEventListener('mousedown', function () {
-            if (fenetre.classList.contains('fenetre-jeu-ouverte')) mettreAuPremierPlan(fenetre);
+            if (fenetre.classList.contains('fenetre-jeu-ouverte')) {
+                mettrePremierPlan(fenetre);
+            }
         });
 
         const poignee = fenetre.querySelector('.entete-fenetre-jeu') || fenetre.querySelector('.titre-visuel-inventaire');
-        if (!poignee) return;
+
+        if (!poignee) {
+            return;
+        }
 
         poignee.addEventListener('mousedown', function (evenement) {
-            if (evenement.button !== 0 || evenement.target.closest('[data-fermer-fenetre="oui"]')) return;
+            if (evenement.target.closest('[data-fermer-fenetre="oui"]')) {
+                return;
+            }
+
+            if (evenement.button !== 0) {
+                return;
+            }
+
             evenement.preventDefault();
+            evenement.stopPropagation();
+
             const rectangle = fenetre.getBoundingClientRect();
             const decalageX = evenement.clientX - rectangle.left;
             const decalageY = evenement.clientY - rectangle.top;
+
             fenetre.style.transform = 'none';
             fenetre.style.right = 'auto';
             fenetre.style.bottom = 'auto';
             fenetre.style.left = rectangle.left + 'px';
             fenetre.style.top = rectangle.top + 'px';
-            mettreAuPremierPlan(fenetre);
+
+            mettrePremierPlan(fenetre);
 
             function deplacer(evenementDeplacement) {
                 const largeurMax = window.innerWidth - fenetre.offsetWidth;
                 const hauteurMax = window.innerHeight - fenetre.offsetHeight;
+
                 let gauche = evenementDeplacement.clientX - decalageX;
                 let haut = evenementDeplacement.clientY - decalageY;
+
                 gauche = Math.max(0, Math.min(gauche, Math.max(0, largeurMax)));
                 haut = Math.max(0, Math.min(haut, Math.max(0, hauteurMax)));
+
                 fenetre.style.left = gauche + 'px';
                 fenetre.style.top = haut + 'px';
             }
@@ -164,239 +302,442 @@ function initialiserGestionnaireFenetresJeu() {
     });
 
     document.addEventListener('keydown', function (evenement) {
-        if (evenement.key !== 'Escape') return;
-        const ouvertes = fenetres.filter(function (fenetre) { return fenetre.classList.contains('fenetre-jeu-ouverte'); });
-        if (ouvertes.length === 0) return;
-        const plusHaute = ouvertes.reduce(function (precedente, actuelle) {
-            const zPrecedent = parseInt(precedente.style.zIndex || '0', 10);
-            const zActuel = parseInt(actuelle.style.zIndex || '0', 10);
-            return zActuel > zPrecedent ? actuelle : precedente;
+        if (evenement.key !== 'Escape') {
+            return;
+        }
+
+        const encoreOuvertes = ouvertes();
+
+        if (encoreOuvertes.length === 0) {
+            return;
+        }
+
+        const plusHaute = encoreOuvertes.reduce(function (fenetrePrecedente, fenetreActuelle) {
+            const zPrecedent = parseInt(fenetrePrecedente.style.zIndex || '0', 10);
+            const zActuel = parseInt(fenetreActuelle.style.zIndex || '0', 10);
+
+            return zActuel > zPrecedent ? fenetreActuelle : fenetrePrecedente;
         });
+
         fermerFenetre(plusHaute);
     });
+
+    try {
+        const fenetresSauvegardees = window.sessionStorage.getItem('elementia_fenetres_ouvertes');
+
+        if (fenetresSauvegardees) {
+            fenetresSauvegardees
+                .split(',')
+                .map(function (cle) { return cle.trim(); })
+                .filter(Boolean)
+                .forEach(function (cle) {
+                    ouvrirFenetre(cle);
+                });
+        }
+    } catch (erreur) {
+        console.warn('Impossible de restaurer les fenêtres ouvertes.', erreur);
+    }
 
     mettreAJourFond();
 }
 
-function initialiserActionsInventaire() {
-    document.querySelectorAll('.formulaire-action-equiper, .formulaire-action-jeter, .formulaire-equipement-slot, .formulaire-action-desequiper, .formulaire-action-double-clic').forEach(function (formulaire) {
-        formulaire.addEventListener('submit', function () { memoriserFenetresOuvertes(); });
-    });
-}
-
-function construireBonusObjetDepuisDataset(dataset) {
-    const lignes = [];
-    const mapping = [['bonusPv', 'PV'], ['bonusAttaque', 'Attaque'], ['bonusMagie', 'Magie'], ['bonusAgilite', 'Agilité'], ['bonusIntelligence', 'Intelligence'], ['bonusSynchronisation', 'Synchronisation'], ['bonusCritique', 'Critique'], ['bonusDexterite', 'Dextérité'], ['bonusDefense', 'Défense']];
-    mapping.forEach(function (entree) {
-        const valeur = parseInt(dataset[entree[0]] || '0', 10);
-        if (valeur !== 0) lignes.push(entree[1] + ' : ' + (valeur > 0 ? '+' : '') + valeur);
-    });
-    return lignes;
-}
-
-function trouverObjetEquipeComparable(categorieObjet) {
-    if (!categorieObjet) return null;
-    const equipements = Array.from(document.querySelectorAll('#fenetre-personnage .slot-personnage-equippe'));
-    return equipements.find(function (equipement) { return (equipement.dataset.categorieObjet || '') === categorieObjet; }) || null;
-}
-
-function remplirInfobulle(infobulle, sourceDataset, evenement) {
-    const titre = infobulle.querySelector('.infobulle-objet-titre');
-    const rarete = infobulle.querySelector('.infobulle-objet-rarete');
-    const type = infobulle.querySelector('.infobulle-objet-type');
-    const poids = infobulle.querySelector('.infobulle-objet-poids');
-    const description = infobulle.querySelector('.infobulle-objet-description');
-    const bonus = infobulle.querySelector('.infobulle-objet-bonus');
-    const estEquipe = !!sourceDataset.slotCible;
-    if (titre) titre.textContent = sourceDataset.nomObjet || 'Objet';
-    if (rarete) rarete.textContent = 'Rareté : ' + (sourceDataset.rareteObjet || 'commune');
-    if (type) type.textContent = 'Type : ' + (sourceDataset.typeObjet || 'inconnu') + ' — ' + (estEquipe ? 'équipé' : 'dans le sac');
-    if (poids) poids.textContent = 'Poids : ' + (sourceDataset.poidsObjet || '0');
-    if (description) description.textContent = sourceDataset.descriptionObjet || '';
-    if (bonus) {
-        const bonusObjet = construireBonusObjetDepuisDataset(sourceDataset);
-        const equipementComparable = trouverObjetEquipeComparable(sourceDataset.categorieObjet || '');
-        let html = '<strong>' + (estEquipe ? 'Objet équipé' : 'Objet survolé dans le sac') + '</strong><br>' + (bonusObjet.length > 0 ? bonusObjet.join('<br>') : 'Aucun bonus');
-        if (!estEquipe) {
-            if (equipementComparable && equipementComparable.dataset.instanceObjetId !== sourceDataset.instanceObjetId) {
-                const bonusEquipe = construireBonusObjetDepuisDataset(equipementComparable.dataset);
-                html += '<br><br><strong>Objet actuellement équipé</strong><br>' + (equipementComparable.dataset.nomObjet || 'Objet équipé') + '<br>' + (bonusEquipe.length > 0 ? bonusEquipe.join('<br>') : 'Aucun bonus');
-            } else {
-                html += '<br><br><strong>Objet actuellement équipé</strong><br>Aucun équipement porté sur cet emplacement';
-            }
-        }
-        bonus.innerHTML = html;
-    }
-    infobulle.hidden = false;
-    infobulle.style.position = 'fixed';
-    infobulle.style.left = (evenement.clientX + 16) + 'px';
-    infobulle.style.top = (evenement.clientY + 16) + 'px';
-}
-
-function masquerInfobulle() {
-    const infobulle = document.getElementById('infobulle-objet');
-    if (infobulle) infobulle.hidden = true;
-}
-
-function preparerMenuContextuel(menu) {
-    if (!menu) return null;
-    if (menu.parentElement !== document.body) document.body.appendChild(menu);
-    menu.style.position = 'fixed';
-    menu.style.zIndex = '99999';
-    return menu;
-}
-
-function positionnerMenuContextuel(menu, clientX, clientY) {
-    if (!menu) return;
-    menu.hidden = false;
-    menu.style.left = '0px';
-    menu.style.top = '0px';
-    const marge = 8;
-    const largeur = menu.offsetWidth || 180;
-    const hauteur = menu.offsetHeight || 60;
-    let gauche = clientX + marge;
-    let haut = clientY + marge;
-    if (gauche + largeur > window.innerWidth - marge) gauche = window.innerWidth - largeur - marge;
-    if (haut + hauteur > window.innerHeight - marge) haut = window.innerHeight - hauteur - marge;
-    if (gauche < marge) gauche = marge;
-    if (haut < marge) haut = marge;
-    menu.style.left = gauche + 'px';
-    menu.style.top = haut + 'px';
-}
-
-function initialiserInteractionsInventaire() {
+function initialiserOngletsInventaire() {
     const fenetreInventaire = document.getElementById('fenetre-inventaire');
-    if (!fenetreInventaire) return;
-    const menuContextuel = preparerMenuContextuel(document.getElementById('menu-contextuel-objet'));
+    const fenetrePersonnage = document.getElementById('fenetre-personnage');
+    const menuContextuel = document.getElementById('menu-contextuel-objet');
     const infobulle = document.getElementById('infobulle-objet');
+
+    if (!fenetreInventaire && !fenetrePersonnage) {
+        return;
+    }
+
+    if (infobulle && infobulle.parentElement !== document.body) {
+        document.body.appendChild(infobulle);
+        infobulle.style.position = 'fixed';
+        infobulle.style.zIndex = '999998';
+        infobulle.style.pointerEvents = 'none';
+    }
+
+    if (menuContextuel && menuContextuel.parentElement !== document.body) {
+        document.body.appendChild(menuContextuel);
+        menuContextuel.style.position = 'fixed';
+        menuContextuel.style.zIndex = '999999';
+    }
 
     function fermerMenuContextuel() {
-        if (!menuContextuel) return;
-        menuContextuel.hidden = true;
-        menuContextuel.removeAttribute('data-instance-objet-id');
+        if (menuContextuel) {
+            menuContextuel.hidden = true;
+            menuContextuel.style.display = 'none';
+            menuContextuel.removeAttribute('data-instance-objet-id');
+            menuContextuel.removeAttribute('data-slot-index');
+            menuContextuel.removeAttribute('data-source-menu');
+            menuContextuel.removeAttribute('data-est-equipable');
+            menuContextuel.removeAttribute('data-categorie-objet');
+        }
     }
 
-    fenetreInventaire.querySelectorAll('.slot-inventaire-modele').forEach(function (slot) {
-        slot.addEventListener('mouseenter', function (evenement) { if (infobulle && slot.classList.contains('slot-inventaire-occupe')) remplirInfobulle(infobulle, slot.dataset, evenement); });
-        slot.addEventListener('mousemove', function (evenement) { if (infobulle && slot.classList.contains('slot-inventaire-occupe')) remplirInfobulle(infobulle, slot.dataset, evenement); });
-        slot.addEventListener('mouseleave', function () { masquerInfobulle(); });
-        slot.addEventListener('dblclick', function () {
-            if (!slot.classList.contains('slot-inventaire-occupe')) return;
-            const formulaire = slot.querySelector('.formulaire-action-double-clic');
-            if (formulaire) { memoriserFenetresOuvertes(); formulaire.submit(); }
-        });
-        slot.addEventListener('contextmenu', function (evenement) {
-            if (!slot.classList.contains('slot-inventaire-occupe')) return;
-            evenement.preventDefault();
-            masquerInfobulle();
-            if (!menuContextuel) return;
-            menuContextuel.setAttribute('data-instance-objet-id', slot.dataset.instanceObjetId || '');
-            positionnerMenuContextuel(menuContextuel, evenement.clientX, evenement.clientY);
-        });
-    });
+    function construireBonusObjet(slot) {
+        const lignes = [];
+        const mapping = [
+            ['bonusPv', 'PV'],
+            ['bonusAttaque', 'Attaque'],
+            ['bonusMagie', 'Magie'],
+            ['bonusAgilite', 'Agilité'],
+            ['bonusIntelligence', 'Intelligence'],
+            ['bonusSynchronisation', 'Synchronisation'],
+            ['bonusCritique', 'Critique'],
+            ['bonusDexterite', 'Dextérité'],
+            ['bonusDefense', 'Défense']
+        ];
 
-    document.addEventListener('click', function (evenement) {
-        if (menuContextuel && !menuContextuel.hidden && !menuContextuel.contains(evenement.target)) fermerMenuContextuel();
-    });
+        mapping.forEach(function (entree) {
+            const valeur = parseInt(slot.dataset[entree[0]] || '0', 10);
 
-    if (menuContextuel) {
+            if (valeur !== 0) {
+                lignes.push(entree[1] + ' : +' + valeur);
+            }
+        });
+
+        return lignes;
+    }
+
+    function calculerEffetPotion(slot) {
+        const categorie = String(slot.dataset.categorieObjet || '');
+        const vieMax = parseInt((fenetreInventaire && fenetreInventaire.dataset.vieMax) || '0', 10);
+        const vieActuelle = parseInt((fenetreInventaire && fenetreInventaire.dataset.vieActuelle) || '0', 10);
+        const manaMax = parseInt((fenetreInventaire && fenetreInventaire.dataset.manaMax) || '0', 10);
+        const manaActuel = parseInt((fenetreInventaire && fenetreInventaire.dataset.manaActuel) || '0', 10);
+
+        let pourcentage = 0;
+        let type = '';
+
+        if (categorie.indexOf('potion_vie_20') === 0) {
+            pourcentage = 20;
+            type = 'vie';
+        } else if (categorie.indexOf('potion_vie_60') === 0) {
+            pourcentage = 60;
+            type = 'vie';
+        } else if (categorie.indexOf('potion_vie_100') === 0) {
+            pourcentage = 100;
+            type = 'vie';
+        } else if (categorie.indexOf('potion_mana_20') === 0) {
+            pourcentage = 20;
+            type = 'mana';
+        } else if (categorie.indexOf('potion_mana_60') === 0) {
+            pourcentage = 60;
+            type = 'mana';
+        } else if (categorie.indexOf('potion_mana_100') === 0) {
+            pourcentage = 100;
+            type = 'mana';
+        }
+
+        if (!pourcentage || !type) {
+            return '';
+        }
+
+        if (type === 'vie') {
+            const rendu = Math.max(1, Math.round(vieMax * (pourcentage / 100)));
+            const apres = Math.min(vieMax, vieActuelle + rendu);
+            return 'Effet : rend ' + rendu + ' PV (' + pourcentage + '%).<br>Après usage : ' + apres + ' / ' + vieMax;
+        }
+
+        const rendu = Math.max(1, Math.round(manaMax * (pourcentage / 100)));
+        const apres = Math.min(manaMax, manaActuel + rendu);
+        return 'Effet : rend ' + rendu + ' mana (' + pourcentage + '%).<br>Après usage : ' + apres + ' / ' + manaMax;
+    }
+
+    function afficherInfobulle(slot, evenement) {
+        if (!infobulle) {
+            return;
+        }
+
+        const titre = infobulle.querySelector('.infobulle-objet-titre');
+        const rarete = infobulle.querySelector('.infobulle-objet-rarete');
+        const type = infobulle.querySelector('.infobulle-objet-type');
+        const poids = infobulle.querySelector('.infobulle-objet-poids');
+        const description = infobulle.querySelector('.infobulle-objet-description');
+        const bonus = infobulle.querySelector('.infobulle-objet-bonus');
+
+        if (titre) {
+            titre.textContent = slot.dataset.nomObjet || 'Objet';
+        }
+
+        if (rarete) {
+            rarete.textContent = 'Rareté : ' + (slot.dataset.rareteObjet || 'commune');
+        }
+
+        if (type) {
+            type.textContent = 'Type : ' + (slot.dataset.typeObjet || 'inconnu');
+        }
+
+        if (poids) {
+            poids.textContent = 'Poids : ' + (slot.dataset.poidsObjet || '0');
+        }
+
+        if (description) {
+            description.textContent = slot.dataset.descriptionObjet || '';
+        }
+
+        if (bonus) {
+            const listeBonus = construireBonusObjet(slot);
+            const effetPotion = calculerEffetPotion(slot);
+            let contenu = listeBonus.length > 0 ? listeBonus.join('<br>') : 'Aucun bonus';
+
+            if (effetPotion !== '') {
+                contenu += '<br><br>' + effetPotion;
+            }
+
+            bonus.innerHTML = contenu;
+        }
+
+        infobulle.hidden = false;
+        infobulle.style.display = 'block';
+        infobulle.style.left = (evenement.clientX + 16) + 'px';
+        infobulle.style.top = (evenement.clientY + 16) + 'px';
+    }
+
+    function masquerInfobulle() {
+        if (infobulle) {
+            infobulle.hidden = true;
+            infobulle.style.display = 'none';
+        }
+    }
+
+    function determinerNatureObjet(slot) {
+        const categorieObjet = String(slot.dataset.categorieObjet || '').toLowerCase();
+        const typeObjet = String(slot.dataset.typeObjet || '').toLowerCase();
+        const nomObjet = String(slot.dataset.nomObjet || '').toLowerCase();
+        const estConsommableBrut = String(slot.dataset.estConsommable || '0') === '1';
+        const estEquipableBrut = String(slot.dataset.estEquipable || '0') === '1';
+
+        const estPotion =
+            categorieObjet.indexOf('potion') !== -1 ||
+            nomObjet.indexOf('potion') !== -1;
+
+        const estConsommable =
+            estPotion ||
+            estConsommableBrut ||
+            typeObjet === 'consommable' ||
+            typeObjet === 'nourriture';
+
+        const estEquipable =
+            !estConsommable && (
+                estEquipableBrut ||
+                typeObjet === 'equipement' ||
+                typeObjet === 'arme' ||
+                typeObjet === 'armure' ||
+                typeObjet === 'casque' ||
+                typeObjet === 'gants' ||
+                typeObjet === 'bottes' ||
+                typeObjet === 'anneau' ||
+                typeObjet === 'collier' ||
+                typeObjet === 'artefact'
+            );
+
+        return {
+            estConsommable: estConsommable,
+            estEquipable: estEquipable
+        };
+    }
+
+    function reglerVisibiliteBouton(bouton, visible, texte) {
+        bouton.hidden = !visible;
+        bouton.style.display = visible ? 'block' : 'none';
+
+        if (visible && texte) {
+            bouton.textContent = texte;
+        }
+    }
+
+    function afficherActionsMenu(sourceMenu, slot) {
+        if (!menuContextuel) {
+            return;
+        }
+
+        const nature = determinerNatureObjet(slot);
+
         menuContextuel.querySelectorAll('[data-action-menu]').forEach(function (bouton) {
-            bouton.addEventListener('click', function () {
-                const action = bouton.getAttribute('data-action-menu');
-                const instanceObjetId = menuContextuel.getAttribute('data-instance-objet-id');
-                if (!instanceObjetId) { fermerMenuContextuel(); return; }
-                const selecteurFormulaire = action === 'equiper'
-                    ? '.formulaire-action-equiper input[name="instance_objet_id"][value="' + instanceObjetId + '"]'
-                    : '.formulaire-action-jeter input[name="instance_objet_id"][value="' + instanceObjetId + '"]';
-                const champ = fenetreInventaire.querySelector(selecteurFormulaire);
-                if (champ && champ.form) { memoriserFenetresOuvertes(); champ.form.submit(); }
-                fermerMenuContextuel();
+            const action = bouton.getAttribute('data-action-menu');
+
+            if (sourceMenu === 'inventaire') {
+                if (action === 'utiliser') {
+                    reglerVisibiliteBouton(bouton, nature.estConsommable, 'Utiliser');
+                    return;
+                }
+
+                if (action === 'equiper') {
+                    reglerVisibiliteBouton(bouton, nature.estEquipable, 'Équiper');
+                    return;
+                }
+
+                if (action === 'desequiper') {
+                    reglerVisibiliteBouton(bouton, false, 'Déséquiper');
+                    return;
+                }
+
+                if (action === 'jeter') {
+                    reglerVisibiliteBouton(bouton, true, 'Jeter');
+                    return;
+                }
+            }
+
+            if (sourceMenu === 'personnage') {
+                if (action === 'desequiper') {
+                    reglerVisibiliteBouton(bouton, true, 'Déséquiper');
+                    return;
+                }
+
+                reglerVisibiliteBouton(bouton, false, bouton.textContent);
+                return;
+            }
+
+            reglerVisibiliteBouton(bouton, false, bouton.textContent);
+        });
+    }
+
+    function ouvrirMenuContextuel(evenement, slot, sourceMenu) {
+        if (!menuContextuel) {
+            return;
+        }
+
+        evenement.preventDefault();
+        evenement.stopPropagation();
+        masquerInfobulle();
+
+        afficherActionsMenu(sourceMenu, slot);
+
+        menuContextuel.hidden = false;
+        menuContextuel.style.display = 'block';
+        menuContextuel.style.left = evenement.clientX + 'px';
+        menuContextuel.style.top = evenement.clientY + 'px';
+        menuContextuel.setAttribute('data-instance-objet-id', slot.dataset.instanceObjetId || '');
+        menuContextuel.setAttribute('data-slot-index', slot.dataset.slotIndex || '');
+        menuContextuel.setAttribute('data-source-menu', sourceMenu);
+        menuContextuel.setAttribute('data-est-equipable', slot.dataset.estEquipable || '0');
+        menuContextuel.setAttribute('data-categorie-objet', slot.dataset.categorieObjet || '');
+    }
+
+    if (fenetreInventaire) {
+        fenetreInventaire.querySelectorAll('.slot-inventaire-modele').forEach(function (slot) {
+            slot.addEventListener('mouseenter', function (evenement) {
+                if (slot.classList.contains('slot-inventaire-occupe')) {
+                    afficherInfobulle(slot, evenement);
+                }
+            });
+
+            slot.addEventListener('mousemove', function (evenement) {
+                if (slot.classList.contains('slot-inventaire-occupe')) {
+                    afficherInfobulle(slot, evenement);
+                }
+            });
+
+            slot.addEventListener('mouseleave', function () {
+                masquerInfobulle();
+            });
+
+            slot.addEventListener('contextmenu', function (evenement) {
+                if (!slot.classList.contains('slot-inventaire-occupe')) {
+                    return;
+                }
+
+                ouvrirMenuContextuel(evenement, slot, 'inventaire');
             });
         });
     }
-}
 
-function initialiserDragAndDropEquipement() {
-    let instanceObjetIdEnCours = '';
-    document.querySelectorAll('#fenetre-inventaire .slot-inventaire-occupe').forEach(function (slotInventaire) {
-        slotInventaire.addEventListener('dragstart', function (evenement) {
-            const instanceObjetId = slotInventaire.getAttribute('data-instance-objet-id') || '';
-            if (!instanceObjetId) { evenement.preventDefault(); return; }
-            instanceObjetIdEnCours = instanceObjetId;
-            slotInventaire.classList.add('slot-drag-source');
-            if (evenement.dataTransfer) {
-                evenement.dataTransfer.setData('text/plain', instanceObjetId);
-                evenement.dataTransfer.effectAllowed = 'move';
-            }
-        });
-        slotInventaire.addEventListener('dragend', function () {
-            instanceObjetIdEnCours = '';
-            slotInventaire.classList.remove('slot-drag-source');
-            document.querySelectorAll('#fenetre-personnage .slot-personnage').forEach(function (slotPersonnage) { slotPersonnage.classList.remove('slot-drop-survole'); });
-        });
-    });
+    if (fenetrePersonnage) {
+        fenetrePersonnage.querySelectorAll('.slot-personnage-equippe').forEach(function (slot) {
+            slot.addEventListener('mouseenter', function (evenement) {
+                afficherInfobulle(slot, evenement);
+            });
 
-    document.querySelectorAll('#fenetre-personnage .slot-personnage').forEach(function (slotPersonnage) {
-        slotPersonnage.addEventListener('dragover', function (evenement) {
-            if (slotPersonnage.classList.contains('slot-personnage-occupe')) return;
-            evenement.preventDefault();
-            if (evenement.dataTransfer) evenement.dataTransfer.dropEffect = 'move';
-            slotPersonnage.classList.add('slot-drop-survole');
-        });
-        slotPersonnage.addEventListener('dragleave', function () { slotPersonnage.classList.remove('slot-drop-survole'); });
-        slotPersonnage.addEventListener('drop', function (evenement) {
-            evenement.preventDefault();
-            slotPersonnage.classList.remove('slot-drop-survole');
-            if (slotPersonnage.classList.contains('slot-personnage-occupe')) return;
-            const instanceObjetId = (evenement.dataTransfer && evenement.dataTransfer.getData('text/plain')) || instanceObjetIdEnCours;
-            const formulaire = slotPersonnage.querySelector('.formulaire-equipement-slot');
-            if (!instanceObjetId || !formulaire) return;
-            const champInstance = formulaire.querySelector('input[name="instance_objet_id"]');
-            if (!champInstance) return;
-            champInstance.value = instanceObjetId;
-            memoriserFenetresOuvertes();
-            formulaire.submit();
-        });
-    });
-}
+            slot.addEventListener('mousemove', function (evenement) {
+                afficherInfobulle(slot, evenement);
+            });
 
-function initialiserInteractionsEquipement() {
-    const menuEquipement = preparerMenuContextuel(document.getElementById('menu-contextuel-equipement'));
-    const infobulle = document.getElementById('infobulle-objet');
+            slot.addEventListener('mouseleave', function () {
+                masquerInfobulle();
+            });
 
-    document.querySelectorAll('#fenetre-personnage .slot-personnage-equippe').forEach(function (slotEquipe) {
-        slotEquipe.addEventListener('mouseenter', function (evenement) { if (infobulle) remplirInfobulle(infobulle, slotEquipe.dataset, evenement); });
-        slotEquipe.addEventListener('mousemove', function (evenement) { if (infobulle) remplirInfobulle(infobulle, slotEquipe.dataset, evenement); });
-        slotEquipe.addEventListener('mouseleave', function () { masquerInfobulle(); });
-        slotEquipe.addEventListener('contextmenu', function (evenement) {
-            evenement.preventDefault();
-            masquerInfobulle();
-            if (!menuEquipement) return;
-            menuEquipement.setAttribute('data-instance-objet-id', slotEquipe.getAttribute('data-instance-objet-id') || '');
-            positionnerMenuContextuel(menuEquipement, evenement.clientX, evenement.clientY);
+            slot.addEventListener('contextmenu', function (evenement) {
+                ouvrirMenuContextuel(evenement, slot, 'personnage');
+            });
         });
-    });
+    }
 
     document.addEventListener('click', function (evenement) {
-        if (menuEquipement && !menuEquipement.hidden && !menuEquipement.contains(evenement.target)) {
-            menuEquipement.hidden = true;
-            menuEquipement.removeAttribute('data-instance-objet-id');
+        if (menuContextuel && !menuContextuel.hidden && !menuContextuel.contains(evenement.target)) {
+            fermerMenuContextuel();
         }
     });
 
-    if (menuEquipement) {
-        menuEquipement.querySelectorAll('[data-action-menu-equipement]').forEach(function (bouton) {
-            bouton.addEventListener('click', function () {
-                const action = bouton.getAttribute('data-action-menu-equipement');
-                const instanceObjetId = menuEquipement.getAttribute('data-instance-objet-id');
-                if (action !== 'desequiper' || !instanceObjetId) {
-                    menuEquipement.hidden = true;
+    if (menuContextuel) {
+        menuContextuel.addEventListener('mousedown', function (evenement) {
+            evenement.preventDefault();
+            evenement.stopPropagation();
+        });
+
+        menuContextuel.addEventListener('click', function (evenement) {
+            evenement.preventDefault();
+            evenement.stopPropagation();
+        });
+
+        menuContextuel.querySelectorAll('[data-action-menu]').forEach(function (bouton) {
+            bouton.addEventListener('click', function (evenement) {
+                evenement.preventDefault();
+                evenement.stopPropagation();
+
+                if (bouton.hidden || bouton.style.display === 'none') {
                     return;
                 }
-                const champ = document.querySelector('#fenetre-personnage .formulaire-action-desequiper input[name="instance_objet_id"][value="' + instanceObjetId + '"]');
-                if (champ && champ.form) { memoriserFenetresOuvertes(); champ.form.submit(); }
-                menuEquipement.hidden = true;
-                menuEquipement.removeAttribute('data-instance-objet-id');
+
+                const action = bouton.getAttribute('data-action-menu');
+                const instanceObjetId = menuContextuel.getAttribute('data-instance-objet-id');
+                const sourceMenu = menuContextuel.getAttribute('data-source-menu');
+
+                if (!instanceObjetId) {
+                    fermerMenuContextuel();
+                    return;
+                }
+
+                let champ = null;
+
+                if (sourceMenu === 'inventaire' && fenetreInventaire) {
+                    if (action === 'equiper') {
+                        champ = fenetreInventaire.querySelector(
+                            '.formulaire-action-equiper input[name="instance_objet_id"][value="' + instanceObjetId + '"]'
+                        );
+                    } else if (action === 'utiliser') {
+                        champ = fenetreInventaire.querySelector(
+                            '.formulaire-action-utiliser input[name="instance_objet_id"][value="' + instanceObjetId + '"]'
+                        );
+                    } else if (action === 'jeter') {
+                        champ = fenetreInventaire.querySelector(
+                            '.formulaire-action-jeter input[name="instance_objet_id"][value="' + instanceObjetId + '"]'
+                        );
+                    }
+                }
+
+                if (sourceMenu === 'personnage' && action === 'desequiper' && fenetrePersonnage) {
+                    champ = fenetrePersonnage.querySelector(
+                        '.formulaire-action-desequiper input[name="instance_objet_id"][value="' + instanceObjetId + '"]'
+                    );
+                }
+
+                fermerMenuContextuel();
+
+                if (champ && champ.form) {
+                    try {
+                        const fenetresOuvertes = Array.from(document.querySelectorAll('.fenetre-jeu-modele.fenetre-jeu-ouverte'))
+                            .map(function (fenetre) { return fenetre.getAttribute('data-cle-fenetre') || ''; })
+                            .filter(Boolean);
+                        window.sessionStorage.setItem('elementia_fenetres_ouvertes', fenetresOuvertes.join(','));
+                    } catch (erreur) {
+                        console.warn('Impossible de sauvegarder les fenêtres ouvertes.', erreur);
+                    }
+
+                    champ.form.submit();
+                }
             });
         });
     }

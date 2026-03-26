@@ -76,6 +76,31 @@ class Routeur
         $action = $_POST['action'] ?? '';
 
         // -------------------------------------------------
+        // Les actions du jeu sont traitées dans ControleurJeu
+        // pendant le chargement de la vue "jeu".
+        // On les laisse passer ici sans redirection pour
+        // éviter les conflits entre Routeur et ControleurJeu.
+        // -------------------------------------------------
+        $actions_jeu = [
+            'utiliser_objet_inventaire',
+            'equiper_ou_remplacer_objet',
+            'equiper_objet_inventaire',
+            'equiper_objet_slot',
+            'desequiper_objet_equipe',
+            'jeter_objet_inventaire',
+            'debug_retirer_vie_fixe',
+            'debug_retirer_vie_pourcentage',
+            'debug_retirer_mana_fixe',
+            'debug_retirer_mana_pourcentage'
+        ];
+
+        if (in_array($action, $actions_jeu, true)) {
+            self::verifierCompteConnecte();
+            self::verifierPersonnageActif();
+            return;
+        }
+
+        // -------------------------------------------------
         // Navigation authentification
         // -------------------------------------------------
         if ($action === 'afficher_inscription') {
