@@ -7,31 +7,16 @@ require_once __DIR__ . '/../configuration/base_de_donnees.php';
 
 class Personnage
 {
-    // --------------------------------------------------
-    // Charger un personnage par ID
-    // --------------------------------------------------
     public static function charger(int $personnageId)
     {
         global $connexion_base;
 
-        $sql = "
-            SELECT *
-            FROM personnages
-            WHERE id = :id
-            LIMIT 1
-        ";
-
+        $sql = "SELECT * FROM personnages WHERE id = :id LIMIT 1";
         $requete = $connexion_base->prepare($sql);
-        $requete->execute([
-            'id' => $personnageId
-        ]);
-
+        $requete->execute(['id' => $personnageId]);
         return $requete->fetch();
     }
 
-    // --------------------------------------------------
-    // Calculer les statistiques finales avec équipement
-    // --------------------------------------------------
     public static function calculerStats(int $personnageId)
     {
         global $connexion_base;
@@ -60,12 +45,13 @@ class Personnage
                 (p.defense + IFNULL(SUM(co.bonus_defense), 0)) AS defense
 
             FROM personnages p
-            LEFT JOIN equipements_personnage ep
-                ON ep.personnage_id = p.id
-            LEFT JOIN instances_objets io
-                ON io.id = ep.instance_objet_id
-            LEFT JOIN catalogue_objets co
-                ON co.id = io.catalogue_objet_id
+            LEFT JOIN (
+                SELECT DISTINCT personnage_id, instance_objet_id
+                FROM equipements_personnage
+                WHERE personnage_id = :id
+            ) epu ON epu.personnage_id = p.id
+            LEFT JOIN instances_objets io ON io.id = epu.instance_objet_id
+            LEFT JOIN catalogue_objets co ON co.id = io.catalogue_objet_id
             WHERE p.id = :id
             GROUP BY
                 p.id,
@@ -91,10 +77,7 @@ class Personnage
         ";
 
         $requete = $connexion_base->prepare($sql);
-        $requete->execute([
-            'id' => $personnageId
-        ]);
-
+        $requete->execute(['id' => $personnageId]);
         return $requete->fetch();
     }
 }

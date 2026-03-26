@@ -11,9 +11,7 @@ $creation = $_SESSION['creation_personnage'] ?? [
     'avatar' => '',
     'variante_avatar' => 1,
     'statistiques' => [
-        'point_de_vie' => 0,
         'attaque' => 0,
-        'magie' => 0,
         'agilite' => 0,
         'intelligence' => 0,
         'synchronisation_elementaire' => 0,
@@ -38,9 +36,7 @@ foreach ($statistiques_actuelles as $valeur_statistique_actuelle) {
     $total_statistiques_actuelles += (int) $valeur_statistique_actuelle;
 }
 $statistiques_affichees = $total_statistiques_actuelles > 0 ? [
-    'point_de_vie' => (int) ($statistiques_actuelles['point_de_vie'] ?? 0),
     'attaque' => (int) ($statistiques_actuelles['attaque'] ?? 0),
-    'magie' => (int) ($statistiques_actuelles['magie'] ?? 0),
     'agilite' => (int) ($statistiques_actuelles['agilite'] ?? 0),
     'intelligence' => (int) ($statistiques_actuelles['intelligence'] ?? 0),
     'synchronisation_elementaire' => (int) ($statistiques_actuelles['synchronisation_elementaire'] ?? 0),
@@ -48,9 +44,7 @@ $statistiques_affichees = $total_statistiques_actuelles > 0 ? [
     'dexterite' => (int) ($statistiques_actuelles['dexterite'] ?? 0),
     'defense' => (int) ($statistiques_actuelles['defense'] ?? 0)
 ] : [
-    'point_de_vie' => (int) ($suggestion['point_de_vie'] ?? 0),
     'attaque' => (int) ($suggestion['attaque'] ?? 0),
-    'magie' => (int) ($suggestion['magie'] ?? 0),
     'agilite' => (int) ($suggestion['agilite'] ?? 0),
     'intelligence' => (int) ($suggestion['intelligence'] ?? 0),
     'synchronisation_elementaire' => (int) ($suggestion['synchronisation_elementaire'] ?? 0),

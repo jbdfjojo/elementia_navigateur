@@ -148,7 +148,6 @@ class Routeur
                 Inventaire::retirerInstance($personnage_id, $instance_objet_id);
 
                 $connexion_base->commit();
-                $_SESSION['messages_succes'] = ['Objet équipé avec succès.'];
             } catch (Throwable $exception) {
                 if ($connexion_base->inTransaction()) {
                     $connexion_base->rollBack();
@@ -190,13 +189,40 @@ class Routeur
                 Inventaire::supprimerInstanceObjet($personnage_id, $instance_objet_id);
 
                 $connexion_base->commit();
-                $_SESSION['messages_succes'] = ['Objet jeté avec succès.'];
             } catch (Throwable $exception) {
                 if ($connexion_base->inTransaction()) {
                     $connexion_base->rollBack();
                 }
 
                 $_SESSION['messages_erreur'] = ['Impossible de jeter l’objet.'];
+            }
+
+            self::redirigerIndex();
+        }
+
+        if ($action === 'debug_ajouter_objet_inventaire') {
+            self::verifierCompteConnecte();
+            self::verifierPersonnageActif();
+
+            require_once __DIR__ . '/../modeles/Objet.php';
+
+            $personnage_id = (int) ($_SESSION['personnage_id'] ?? 0);
+            $catalogue_objet_id = (int) ($_POST['catalogue_objet_id'] ?? 0);
+            $quantite = max(1, (int) ($_POST['quantite'] ?? 1));
+
+            if ($catalogue_objet_id <= 0) {
+                $_SESSION['messages_erreur'] = ['Objet de debug invalide.'];
+                self::redirigerIndex();
+            }
+
+            try {
+                $nombreAjoutes = Objet::ajouterObjetDebugAuPersonnage($personnage_id, $catalogue_objet_id, $quantite);
+
+                if ($nombreAjoutes <= 0) {
+                    $_SESSION['messages_erreur'] = ['Aucun objet n’a pu être ajouté.'];
+                }
+            } catch (Throwable $exception) {
+                $_SESSION['messages_erreur'] = ['Impossible d’ajouter l’objet de debug.'];
             }
 
             self::redirigerIndex();
@@ -323,9 +349,7 @@ class Routeur
             'avatar' => '',
             'variante_avatar' => 1,
             'statistiques' => [
-                'point_de_vie' => 0,
                 'attaque' => 0,
-                'magie' => 0,
                 'agilite' => 0,
                 'intelligence' => 0,
                 'synchronisation_elementaire' => 0,
@@ -489,10 +513,11 @@ class Routeur
         $nom = trim($_POST['nom_personnage'] ?? '');
         $sexe = trim($_POST['sexe'] ?? '');
         $variante_avatar = (int) ($_POST['variante_avatar'] ?? 1);
+        $avatar = trim($_POST['avatar'] ?? '');
 
-        $point_de_vie = (int) ($_POST['point_de_vie'] ?? 0);
+        $point_de_vie = self::obtenirBasePointDeVieParClasse((string) ($_SESSION['creation_personnage']['classe'] ?? ''));
         $attaque = (int) ($_POST['attaque'] ?? 0);
-        $magie = (int) ($_POST['magie'] ?? 0);
+        $magie = self::obtenirBaseMagieParClasse((string) ($_SESSION['creation_personnage']['classe'] ?? ''));
         $agilite = (int) ($_POST['agilite'] ?? 0);
         $intelligence = (int) ($_POST['intelligence'] ?? 0);
         $synchronisation_elementaire = (int) ($_POST['synchronisation_elementaire'] ?? 0);
@@ -518,27 +543,20 @@ class Routeur
             $messages_erreur[] = 'Vous devez choisir un sexe valide.';
         }
 
-        $avatars_disponibles = self::obtenirAvatarsFictifs();
-        $avatar_valide = false;
-
-        foreach ($avatars_disponibles as $avatar_disponible) {
-            if (
-                $avatar_disponible['identifiant'] === $avatar
-                && $avatar_disponible['sexe'] === $sexe
-            ) {
-                $avatar_valide = true;
-                break;
-            }
-        }
+        $avatar_valide = self::verifierAvatarCreationPersonnage(
+            $avatar,
+            $sexe,
+            (string) ($_SESSION['creation_personnage']['element'] ?? ''),
+            (string) ($_SESSION['creation_personnage']['classe'] ?? ''),
+            $variante_avatar
+        );
 
         if (!$avatar_valide) {
             $messages_erreur[] = 'Vous devez choisir un avatar valide correspondant au sexe sélectionné.';
         }
 
         $statistiques = [
-            'point_de_vie' => $point_de_vie,
             'attaque' => $attaque,
-            'magie' => $magie,
             'agilite' => $agilite,
             'intelligence' => $intelligence,
             'synchronisation_elementaire' => $synchronisation_elementaire,
@@ -1102,6 +1120,74 @@ class Routeur
     // -----------------------------------------------------
     // Avatars fictifs
     // -----------------------------------------------------
+
+    public static function verifierAvatarCreationPersonnage(
+        string $avatar,
+        string $sexe,
+        string $element,
+        string $classe,
+        int $variante_avatar
+    ): bool
+    {
+        $avatar = trim($avatar);
+
+        if ($avatar === '' || !in_array($sexe, ['homme', 'femme'], true)) {
+            return false;
+        }
+
+        $mappingElement = [
+            'Feu' => 'feu',
+            'Eau' => 'eau',
+            'Air' => 'air',
+            'Terre' => 'terre'
+        ];
+
+        $mappingClasse = [
+            'Guerrier du Feu' => 'guerrier',
+            'Berserker du Feu' => 'berserker',
+            'Mage du Feu' => 'mage',
+            'Prêtre du Feu' => 'pretre',
+            'Guerrier de l’Eau' => 'guerrier',
+            'Combattant de l’Eau' => 'berserker',
+            'Mage de l’Eau' => 'mage',
+            'Prêtre de l’Eau' => 'pretre',
+            'Guerrier de l’Air' => 'guerrier',
+            'Chasseur de l’Air' => 'berserker',
+            'Mage de l’Air' => 'mage',
+            'Prêtre de l’Air' => 'pretre',
+            'Guerrier de la Terre' => 'guerrier',
+            'Briseur de Terre' => 'berserker',
+            'Mage de la Terre' => 'mage',
+            'Prêtre de la Terre' => 'pretre'
+        ];
+
+        $elementFichier = $mappingElement[$element] ?? '';
+        $classeFichier = $mappingClasse[$classe] ?? '';
+
+        if ($elementFichier !== '' && $classeFichier !== '') {
+            $avatarAttendu = $elementFichier . '_' . $classeFichier . '_' . $sexe . '_' . $variante_avatar . '.png';
+
+            if ($avatar === $avatarAttendu) {
+                $cheminAvatar = __DIR__ . '/../ressources/images/avatars/' . $avatarAttendu;
+                if (is_file($cheminAvatar)) {
+                    return true;
+                }
+            }
+        }
+
+        $avatars_disponibles = self::obtenirAvatarsFictifs();
+        foreach ($avatars_disponibles as $avatar_disponible) {
+            if (
+                ($avatar_disponible['identifiant'] ?? '') === $avatar
+                && ($avatar_disponible['sexe'] ?? '') === $sexe
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static function obtenirAvatarsFictifs(): array
     {
         return [
@@ -1179,57 +1265,91 @@ class Routeur
 
         if (in_array($classe, $classes_tank, true)) {
             return [
-                'point_de_vie' => 7,
-                'attaque' => 2,
-                'magie' => 1,
-                'agilite' => 2,
+                'attaque' => 4,
+                'agilite' => 3,
                 'intelligence' => 2,
                 'synchronisation_elementaire' => 3,
-                'critique' => 1,
-                'dexterite' => 2,
-                'defense' => 10
+                'critique' => 2,
+                'dexterite' => 4,
+                'defense' => 12
             ];
         }
 
         if (in_array($classe, $classes_heal, true)) {
             return [
-                'point_de_vie' => 3,
-                'attaque' => 1,
-                'magie' => 5,
-                'agilite' => 2,
-                'intelligence' => 7,
-                'synchronisation_elementaire' => 5,
-                'critique' => 1,
-                'dexterite' => 2,
-                'defense' => 4
+                'attaque' => 2,
+                'agilite' => 3,
+                'intelligence' => 8,
+                'synchronisation_elementaire' => 7,
+                'critique' => 2,
+                'dexterite' => 3,
+                'defense' => 5
             ];
         }
 
         if (in_array($classe, $classes_dps_magie, true)) {
             return [
-                'point_de_vie' => 3,
-                'attaque' => 1,
-                'magie' => 7,
-                'agilite' => 3,
-                'intelligence' => 5,
-                'synchronisation_elementaire' => 6,
-                'critique' => 1,
-                'dexterite' => 2,
+                'attaque' => 2,
+                'agilite' => 4,
+                'intelligence' => 8,
+                'synchronisation_elementaire' => 8,
+                'critique' => 3,
+                'dexterite' => 3,
                 'defense' => 2
             ];
         }
 
         return [
-            'point_de_vie' => 3,
-            'attaque' => 6,
-            'magie' => 2,
-            'agilite' => 5,
+            'attaque' => 8,
+            'agilite' => 6,
             'intelligence' => 2,
             'synchronisation_elementaire' => 3,
-            'critique' => 3,
-            'dexterite' => 4,
+            'critique' => 4,
+            'dexterite' => 5,
             'defense' => 2
         ];
+    }
+
+    public static function obtenirBasePointDeVieParClasse(string $classe): int
+    {
+        $classes_tank = ['Guerrier du Feu', 'Guerrier de l’Eau', 'Guerrier de l’Air', 'Guerrier de la Terre'];
+        $classes_heal = ['Prêtre du Feu', 'Prêtre de l’Eau', 'Prêtre de l’Air', 'Prêtre de la Terre'];
+        $classes_dps_magie = ['Mage du Feu', 'Mage de l’Eau', 'Mage de l’Air', 'Mage de la Terre'];
+
+        if (in_array($classe, $classes_tank, true)) {
+            return 200;
+        }
+
+        if (in_array($classe, $classes_heal, true)) {
+            return 140;
+        }
+
+        if (in_array($classe, $classes_dps_magie, true)) {
+            return 120;
+        }
+
+        return 160;
+    }
+
+    public static function obtenirBaseMagieParClasse(string $classe): int
+    {
+        $classes_tank = ['Guerrier du Feu', 'Guerrier de l’Eau', 'Guerrier de l’Air', 'Guerrier de la Terre'];
+        $classes_heal = ['Prêtre du Feu', 'Prêtre de l’Eau', 'Prêtre de l’Air', 'Prêtre de la Terre'];
+        $classes_dps_magie = ['Mage du Feu', 'Mage de l’Eau', 'Mage de l’Air', 'Mage de la Terre'];
+
+        if (in_array($classe, $classes_tank, true)) {
+            return 40;
+        }
+
+        if (in_array($classe, $classes_heal, true)) {
+            return 120;
+        }
+
+        if (in_array($classe, $classes_dps_magie, true)) {
+            return 140;
+        }
+
+        return 60;
     }
 
 

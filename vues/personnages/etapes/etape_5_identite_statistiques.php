@@ -1,9 +1,10 @@
 <p class="texte-explicatif">
-    Renseignez l’identité finale du personnage et répartissez <strong>exactement 30 points</strong> dans ses statistiques.
+    Renseignez l’identité finale du personnage et répartissez <strong>exactement 30 points</strong> dans les statistiques principales.
 </p>
 
 <div class="bloc-suggestion">
     <h3>Suggestion automatique pour la classe <?= htmlspecialchars($classe_choisie, ENT_QUOTES, 'UTF-8'); ?></h3>
+    <p>Les <strong>PV</strong> et la <strong>magie</strong> sont définis automatiquement au départ puis évolueront avec les niveaux.</p>
     <div class="grille-suggestion">
         <?php foreach ($suggestion as $nom_statistique => $valeur_statistique) : ?>
             <div class="ligne-suggestion">
@@ -11,6 +12,14 @@
                 <strong><?= (int) $valeur_statistique; ?></strong>
             </div>
         <?php endforeach; ?>
+    </div>
+    <div class="ligne-valeur-parametre">
+        <span>PV de départ</span>
+        <strong><?= Routeur::obtenirBasePointDeVieParClasse($classe_choisie); ?></strong>
+    </div>
+    <div class="ligne-valeur-parametre">
+        <span>Magie de départ</span>
+        <strong><?= Routeur::obtenirBaseMagieParClasse($classe_choisie); ?></strong>
     </div>
 </div>
 

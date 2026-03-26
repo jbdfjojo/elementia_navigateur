@@ -50,9 +50,7 @@ class Inventaire
         ";
 
         $requete = $connexion_base->prepare($sql);
-        $requete->execute([
-            'id' => $personnageId
-        ]);
+        $requete->execute(['id' => $personnageId]);
 
         return $requete->fetchAll() ?: [];
     }
@@ -72,9 +70,7 @@ class Inventaire
         ";
 
         $requete = $connexion_base->prepare($sql);
-        $requete->execute([
-            'id' => $personnageId
-        ]);
+        $requete->execute(['id' => $personnageId]);
 
         $resultat = $requete->fetch();
         return (int) ($resultat['poids_total'] ?? 0);
@@ -141,6 +137,20 @@ class Inventaire
     public static function ajouterInstanceDansSlot(int $personnageId, int $instanceObjetId, int $positionSlot, int $catalogueOngletId = 1): bool
     {
         global $connexion_base;
+
+        self::retirerInstance($personnageId, $instanceObjetId);
+
+        $sqlLibererSlot = "
+            DELETE FROM inventaire_personnage_instances
+            WHERE personnage_id = :personnage_id
+              AND position_slot = :position_slot
+        ";
+
+        $requeteLibererSlot = $connexion_base->prepare($sqlLibererSlot);
+        $requeteLibererSlot->execute([
+            'personnage_id' => $personnageId,
+            'position_slot' => $positionSlot
+        ]);
 
         $sql = "
             INSERT INTO inventaire_personnage_instances (
