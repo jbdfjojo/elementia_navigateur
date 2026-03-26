@@ -446,6 +446,136 @@ function initialiserOngletsInventaire() {
         return 'Effet : rend ' + rendu + ' mana (' + pourcentage + '%).<br>Après usage : ' + apres + ' / ' + manaMax;
     }
 
+
+    function normaliserTexteComparaison(texte) {
+        return String(texte || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[̀-ͯ]/g, '');
+    }
+
+    function infererSlotsComparaison(slot) {
+        const source = [
+            normaliserTexteComparaison(slot.dataset.categorieObjet || ''),
+            normaliserTexteComparaison(slot.dataset.typeObjet || ''),
+            normaliserTexteComparaison(slot.dataset.nomObjet || '')
+        ].join(' ');
+
+        if (source.indexOf('arme') !== -1 || source.indexOf('epee') !== -1 || source.indexOf('hache') !== -1 || source.indexOf('arc') !== -1 || source.indexOf('baton') !== -1 || source.indexOf('dague') !== -1 || source.indexOf('bouclier') !== -1) {
+            return ['main_droite', 'main_gauche'];
+        }
+        if (source.indexOf('casque') !== -1 || source.indexOf('tete') !== -1) {
+            return ['tete'];
+        }
+        if (source.indexOf('armure') !== -1 || source.indexOf('torse') !== -1 || source.indexOf('plastron') !== -1) {
+            return ['torse'];
+        }
+        if (source.indexOf('botte') !== -1 || source.indexOf('jambe') !== -1 || source.indexOf('pantalon') !== -1) {
+            return ['jambes'];
+        }
+        if (source.indexOf('collier') !== -1 || source.indexOf('amulette') !== -1) {
+            return ['collier'];
+        }
+        if (source.indexOf('bague') !== -1 || source.indexOf('anneau') !== -1) {
+            return ['bague_1', 'bague_2'];
+        }
+        if (source.indexOf('artefact') !== -1) {
+            return ['artefact'];
+        }
+        if (source.indexOf('gant') !== -1) {
+            return ['gants_gauche', 'gants_droite'];
+        }
+        if (source.indexOf('sac') !== -1) {
+            return ['sac'];
+        }
+
+        return [];
+    }
+
+    function extraireBonusComparaison(slot) {
+        return {
+            pv: parseInt(slot.dataset.bonusPv || '0', 10),
+            attaque: parseInt(slot.dataset.bonusAttaque || '0', 10),
+            magie: parseInt(slot.dataset.bonusMagie || '0', 10),
+            agilite: parseInt(slot.dataset.bonusAgilite || '0', 10),
+            intelligence: parseInt(slot.dataset.bonusIntelligence || '0', 10),
+            synchronisation: parseInt(slot.dataset.bonusSynchronisation || '0', 10),
+            critique: parseInt(slot.dataset.bonusCritique || '0', 10),
+            dexterite: parseInt(slot.dataset.bonusDexterite || '0', 10),
+            defense: parseInt(slot.dataset.bonusDefense || '0', 10)
+        };
+    }
+
+    function construireBlocComparaison(slot) {
+        if (!fenetrePersonnage) {
+            return '';
+        }
+
+        const nature = determinerNatureObjet(slot);
+        if (!nature.estEquipable) {
+            return '';
+        }
+
+        const slotsCompatibles = infererSlotsComparaison(slot);
+        if (slotsCompatibles.length === 0) {
+            return '';
+        }
+
+        let equipementActuel = null;
+
+        for (let i = 0; i < slotsCompatibles.length; i += 1) {
+            equipementActuel = fenetrePersonnage.querySelector('.slot-personnage-equippe[data-slot-cible="' + slotsCompatibles[i] + '"]');
+            if (equipementActuel) {
+                break;
+            }
+        }
+
+        if (!equipementActuel) {
+            return '';
+        }
+
+        const nouveau = extraireBonusComparaison(slot);
+        const actuel = extraireBonusComparaison(equipementActuel);
+        const mapping = [
+            ['PV', 'pv'],
+            ['Attaque', 'attaque'],
+            ['Magie', 'magie'],
+            ['Agilité', 'agilite'],
+            ['Intelligence', 'intelligence'],
+            ['Synchronisation', 'synchronisation'],
+            ['Critique', 'critique'],
+            ['Dextérité', 'dexterite'],
+            ['Défense', 'defense']
+        ];
+
+        let html = '<div class="infobulle-comparaison" style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.15);">';
+        html += '<div class="infobulle-comparaison-titre" style="font-weight:700;margin-bottom:4px;">Comparaison avec : ' + (equipementActuel.dataset.nomObjet || 'Objet équipé') + '</div>';
+
+        let differences = 0;
+        mapping.forEach(function (entree) {
+            const libelle = entree[0];
+            const cle = entree[1];
+            const diff = (nouveau[cle] || 0) - (actuel[cle] || 0);
+
+            if (diff !== 0) {
+                differences += 1;
+                const couleur = diff > 0 ? '#6ee16e' : '#ff7b7b';
+                const signe = diff > 0 ? '+' : '';
+                html += '<div style="display:flex;justify-content:space-between;gap:12px;">'
+                    + '<span>' + libelle + '</span>'
+                    + '<strong style="color:' + couleur + ';">' + signe + diff + '</strong>'
+                    + '</div>';
+            }
+        });
+
+        if (differences === 0) {
+            html += '<div>Aucune différence</div>';
+        }
+
+        html += '</div>';
+        return html;
+    }
+
     function afficherInfobulle(slot, evenement) {
         if (!infobulle) {
             return;
@@ -485,6 +615,11 @@ function initialiserOngletsInventaire() {
 
             if (effetPotion !== '') {
                 contenu += '<br><br>' + effetPotion;
+            }
+
+            const comparaison = construireBlocComparaison(slot);
+            if (comparaison !== '') {
+                contenu += '<br><br>' + comparaison;
             }
 
             bonus.innerHTML = contenu;
