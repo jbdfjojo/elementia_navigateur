@@ -20,7 +20,7 @@
     <div id="contenu-bloc-informations-joueur" class="contenu-bloc-informations-joueur">
         <div class="ligne-information-joueur">
             <strong>Position</strong>
-            <span id="valeur-position-joueur">Case 18 x 12</span>
+            <span id="valeur-position-joueur">Case <?= (int) (($carte['position_joueur']['x'] ?? $personnage['position_x'] ?? 18)); ?> x <?= (int) (($carte['position_joueur']['y'] ?? $personnage['position_y'] ?? 12)); ?></span>
         </div>
 
         <div class="ligne-information-joueur">
@@ -31,6 +31,11 @@
         <div class="ligne-information-joueur">
             <strong>Navigation</strong>
             <span id="valeur-navigation-joueur">À terre · sans bateau</span>
+        </div>
+
+        <div class="ligne-information-joueur">
+            <strong>Direction</strong>
+            <span id="valeur-direction-joueur">Quête : aucune · Repère : aucun</span>
         </div>
 
         <div class="separateur-information-joueur"></div>

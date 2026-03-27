@@ -844,3 +844,567 @@ input[type="range"] {
 .slot-personnage .formulaire-equipement-slot {
     display: none;
 }
+
+/* ========================================================= */
+/* NOUVEAUX PANNEAUX : COMPÉTENCES / QUÊTES / JOURNAL / CARTE */
+/* ========================================================= */
+
+.contenu-fenetre-panneau-double {
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr);
+    gap: 18px;
+}
+
+.colonne-liste-jeu,
+.colonne-detail-jeu,
+.colonne-carte-infos {
+    min-width: 0;
+}
+
+.bloc-resume-fenetre {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding: 14px 16px;
+    border: 1px solid rgba(201, 161, 74, 0.18);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    color: #f2eadb;
+}
+
+.bloc-resume-fenetre strong {
+    font-size: 1.6rem;
+    color: #efc180;
+}
+
+.liste-entrees-jeu {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 62vh;
+    padding-right: 6px;
+    overflow: auto;
+}
+
+.carte-entree-jeu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    padding: 14px 15px;
+    border: 1px solid rgba(201, 161, 74, 0.18);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    color: #f2eadb;
+    text-align: left;
+}
+
+.bouton-entree-detail {
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.bouton-entree-detail:hover,
+.bouton-entree-detail.entree-active {
+    border-color: rgba(236, 177, 115, 0.92);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.20);
+    transform: translateY(-1px);
+}
+
+.carte-entree-jeu strong,
+.entete-detail-jeu h3,
+.bloc-detail-texte h4 {
+    margin: 0;
+    color: #efc180;
+}
+
+.carte-entree-jeu p,
+.entete-detail-jeu p,
+.bloc-detail-texte p,
+.ligne-region-carte p {
+    margin: 0;
+    color: #f2eadb;
+    line-height: 1.5;
+}
+
+.ligne-meta-entree {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 0.86rem;
+    color: #d8c8ad;
+}
+
+.badge-entree {
+    display: inline-flex;
+    width: fit-content;
+    padding: 4px 9px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 226, 184, 0.14);
+    background: rgba(255, 255, 255, 0.06);
+    color: #f5dfb1;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.badge-famille-elementaire { background: rgba(161, 86, 56, 0.22); }
+.badge-famille-neutre { background: rgba(95, 108, 132, 0.22); }
+.badge-etat-terminee { background: rgba(88, 140, 82, 0.24); }
+.badge-etat-echouee { background: rgba(150, 74, 74, 0.24); }
+.badge-etat-en_attente { background: rgba(110, 108, 147, 0.24); }
+.badge-etat-en_cours { background: rgba(159, 119, 65, 0.24); }
+.badge-categorie-journal { background: rgba(87, 106, 148, 0.22); }
+
+.colonne-detail-jeu {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px 18px;
+    border: 1px solid rgba(201, 161, 74, 0.18);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.entete-detail-jeu {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.bloc-niveau-competence {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    color: #f2eadb;
+}
+
+.grille-informations-detail {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.case-information-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 12px 13px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(201, 161, 74, 0.14);
+}
+
+.case-information-detail-large {
+    grid-column: span 2;
+}
+
+.case-information-detail span {
+    color: #ccb898;
+    font-size: 0.82rem;
+}
+
+.case-information-detail strong {
+    color: #f2eadb;
+}
+
+.bloc-detail-texte {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.bloc-progression-jeu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ligne-progression-jeu {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    color: #f2eadb;
+}
+
+.barre-progression-jeu {
+    height: 12px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(201, 161, 74, 0.18);
+}
+
+.barre-progression-remplissage {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(211, 139, 79, 0.96) 0%, rgba(242, 201, 123, 0.98) 100%);
+}
+
+.detail-vide-jeu {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+    min-height: 240px;
+    color: #f2eadb;
+}
+
+.contenu-fenetre-carte-complete {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 18px;
+}
+
+.cadre-carte-complete {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(201, 161, 74, 0.18);
+    background: rgba(0, 0, 0, 0.28);
+}
+
+.image-carte-complete {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.calque-points-carte {
+    position: absolute;
+    inset: 0;
+}
+
+.point-carte {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    border: 2px solid rgba(22, 17, 13, 0.95);
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.16);
+}
+
+.point-carte-ville { background: #d7b467; }
+.point-carte-route { background: #9e6a41; }
+.point-carte-danger { background: #b95555; }
+.point-carte-ponton { background: #4aa7d6; }
+.point-carte-donjon { background: #8f6bd6; }
+.point-carte-joueur {
+    background: #f4f1d4;
+    width: 18px;
+    height: 18px;
+    box-shadow: 0 0 0 3px rgba(255, 246, 210, 0.20), 0 0 18px rgba(255, 246, 210, 0.35);
+}
+
+.liste-legende-carte,
+.liste-regions-carte {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ligne-legende-carte,
+.ligne-region-carte {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.pastille-legende-carte {
+    width: 14px;
+    height: 14px;
+    margin-top: 4px;
+    border-radius: 999px;
+    flex: 0 0 auto;
+}
+
+#fenetre-carte {
+    width: min(1200px, calc(100vw - 32px));
+}
+
+@media (max-width: 1100px) {
+    .contenu-fenetre-panneau-double,
+    .contenu-fenetre-carte-complete {
+        grid-template-columns: 1fr;
+    }
+
+    .grille-informations-detail {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 720px) {
+    .grille-informations-detail {
+        grid-template-columns: 1fr;
+    }
+
+    .case-information-detail-large {
+        grid-column: auto;
+    }
+}
+
+
+
+/* ========================================================= */
+/* FENÊTRE CARTE : GRILLE + MARQUEURS PROPRES                */
+/* ========================================================= */
+.contenu-fenetre-carte-complete {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(280px, 0.85fr);
+    gap: 18px;
+    align-items: start;
+}
+
+.zone-carte-complete {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cadre-carte-complete-grille {
+    position: relative;
+    overflow: hidden;
+    border-radius: 18px;
+    border: 1px solid rgba(201, 161, 74, 0.18);
+    background: rgba(255,255,255,0.03);
+    aspect-ratio: 2534 / 1690;
+}
+
+.image-carte-complete {
+    display: block;
+    width: 100%;
+    height: auto;
+    user-select: none;
+    pointer-events: none;
+}
+
+.grille-carte-complete {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(to right, rgba(170, 230, 255, 0.20) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(170, 230, 255, 0.20) 1px, transparent 1px);
+    background-size: calc(100% / 40) calc(100% / 27);
+    pointer-events: none;
+}
+
+.calque-points-carte,
+.calque-reperes-personnels {
+    position: absolute;
+    inset: 0;
+}
+
+.marqueur-carte {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 4;
+}
+
+.marqueur-carte-point {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    border: 2px solid rgba(15, 10, 7, 0.92);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.16);
+    flex: 0 0 auto;
+}
+
+.marqueur-carte-etiquette {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(10, 9, 8, 0.86);
+    border: 1px solid rgba(195, 143, 80, 0.72);
+    color: #f5eddc;
+    font-size: 12px;
+    line-height: 1;
+    white-space: nowrap;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.20);
+}
+
+.marqueur-carte-ville .marqueur-carte-point { background: #57c26f; }
+.marqueur-carte-ponton .marqueur-carte-point { background: #4aa7d6; }
+.marqueur-carte-donjon .marqueur-carte-point { background: #8f6bd6; }
+.marqueur-carte-special .marqueur-carte-point { background: #8f6bd6; }
+.marqueur-carte-repere .marqueur-carte-point { background: #e38bd3; }
+.marqueur-carte-joueur { z-index: 8; pointer-events: none; }
+.marqueur-carte-joueur .marqueur-carte-point { background: #f4f1d4; width: 12px; height: 12px; }
+.marqueur-carte-joueur .marqueur-carte-etiquette { background: rgba(32, 22, 12, 0.95); }
+
+.marqueur-carte-personnel {
+    cursor: pointer;
+    z-index: 6;
+}
+.marqueur-carte-personnel .marqueur-carte-point { background: #e38bd3; }
+.marqueur-carte-personnel.selectionne .marqueur-carte-etiquette {
+    border-color: rgba(255, 216, 132, 0.95);
+    box-shadow: 0 0 0 1px rgba(255, 216, 132, 0.35), 0 6px 14px rgba(0,0,0,0.20);
+}
+
+.barre-outils-carte {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.etat-mode-carte {
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(201, 161, 74, 0.18);
+    background: rgba(255,255,255,0.03);
+    color: #f2eadb;
+}
+
+.cadre-carte-complete.mode-placement {
+    cursor: crosshair;
+}
+.cadre-carte-complete.mode-placement .marqueur-carte,
+.cadre-carte-complete.mode-placement .marqueur-carte-joueur {
+    pointer-events: none;
+}
+
+@media (max-width: 1200px) {
+    .contenu-fenetre-carte-complete {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* ========================================================= */
+/* CARTE DU MONDE : NOMS AU SURVOL + ZONES COLORÉES          */
+/* ========================================================= */
+#fenetre-carte .barre-filtres-carte {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    align-items: center;
+}
+#fenetre-carte .barre-filtres-carte label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #f3e7d1;
+    font-size: 0.95rem;
+}
+#fenetre-carte .calque-zones-carte {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+}
+#fenetre-carte .zone-carte-coloriee {
+    position: absolute;
+    box-sizing: border-box;
+    border: 1px solid rgba(255,255,255,0.08);
+    pointer-events: none;
+}
+#fenetre-carte .zone-carte-coloriee-ville {
+    background: rgba(87, 194, 111, 0.16);
+    border-color: rgba(87, 194, 111, 0.44);
+}
+#fenetre-carte .zone-carte-coloriee-ponton {
+    background: rgba(74, 167, 214, 0.18);
+    border-color: rgba(74, 167, 214, 0.46);
+}
+#fenetre-carte .zone-carte-coloriee-special {
+    background: rgba(143, 107, 214, 0.12);
+    border-color: rgba(143, 107, 214, 0.30);
+}
+#fenetre-carte .calque-points-carte,
+#fenetre-carte .calque-reperes-personnels {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+}
+#fenetre-carte .marqueur-carte {
+    display: block;
+    width: 0;
+    height: 0;
+    transform: none;
+}
+#fenetre-carte .marqueur-carte-point {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: translate(-50%, -50%);
+}
+#fenetre-carte .marqueur-carte-etiquette {
+    position: absolute;
+    left: 12px;
+    top: 0;
+    transform: translateY(-50%);
+    margin: 0;
+    display: none;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(10, 9, 8, 0.86);
+    border: 1px solid rgba(195, 143, 80, 0.72);
+    color: #f5eddc;
+    font-size: 12px;
+    line-height: 1;
+    white-space: nowrap;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.20);
+}
+#fenetre-carte .marqueur-carte:hover .marqueur-carte-etiquette,
+#fenetre-carte .marqueur-carte:focus-visible .marqueur-carte-etiquette,
+#fenetre-carte .marqueur-carte-personnel.selectionne .marqueur-carte-etiquette {
+    display: inline-block;
+}
+#fenetre-carte .marqueur-carte-officiel {
+    z-index: 4;
+}
+#fenetre-carte .marqueur-carte-joueur {
+    z-index: 8;
+    pointer-events: none;
+}
+#fenetre-carte .marqueur-carte-joueur .marqueur-carte-point {
+    background: #f4f1d4;
+    width: 12px;
+    height: 12px;
+}
+#fenetre-carte .marqueur-carte-joueur .marqueur-carte-etiquette {
+    left: 14px;
+    background: rgba(32, 22, 12, 0.95);
+}
+#fenetre-carte .marqueur-carte-personnel {
+    cursor: pointer;
+    z-index: 6;
+    background: transparent !important;
+    border: 0 !important;
+    padding: 0 !important;
+    min-width: 0 !important;
+    width: auto !important;
+    box-shadow: none !important;
+}
+#fenetre-carte .marqueur-carte-personnel .marqueur-carte-point {
+    background: #e38bd3;
+}
+#fenetre-carte .marqueur-carte-personnel.selectionne .marqueur-carte-etiquette {
+    border-color: rgba(255, 216, 132, 0.95);
+    box-shadow: 0 0 0 1px rgba(255, 216, 132, 0.35), 0 6px 14px rgba(0,0,0,0.20);
+}
+
+
+.marqueur-carte-quete {
+    z-index: 9;
+    pointer-events: none;
+}
+
+.marqueur-carte-quete .marqueur-carte-point {
+    background: #ffd44f;
+    width: 12px;
+    height: 12px;
+    box-shadow: 0 0 0 3px rgba(255, 212, 79, 0.18), 0 0 16px rgba(255, 212, 79, 0.55);
+}
+
+.marqueur-carte-quete .marqueur-carte-etiquette {
+    background: rgba(46, 31, 7, 0.96);
+    color: #ffd44f;
+}

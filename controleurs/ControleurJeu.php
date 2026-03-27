@@ -5,6 +5,10 @@ require_once __DIR__ . '/../modeles/Personnage.php';
 require_once __DIR__ . '/../modeles/Inventaire.php';
 require_once __DIR__ . '/../modeles/Equipement.php';
 require_once __DIR__ . '/../modeles/Objet.php';
+require_once __DIR__ . '/../modeles/Competence.php';
+require_once __DIR__ . '/../modeles/Quete.php';
+require_once __DIR__ . '/../modeles/Journal.php';
+require_once __DIR__ . '/../modeles/Carte.php';
 require_once __DIR__ . '/../configuration/base_de_donnees.php';
 
 if (!class_exists('ControleurJeu')) {
@@ -14,16 +18,25 @@ class ControleurJeu
     {
         global $connexion_base;
         self::traiterActionsPost($personnageId);
+        Personnage::corrigerPositionSiInvalide($personnageId);
         $personnage = Personnage::calculerStats($personnageId);
         $inventaire = Inventaire::charger($personnageId);
         $poidsInventaire = Inventaire::calculerPoidsTotal($personnageId);
         $modeleEquipement = new Equipement($connexion_base);
         $equipements = $modeleEquipement->listerEquipementPersonnage($personnageId);
+        $competences = Competence::chargerCompetencesPersonnage($personnageId);
+        $quetes = Quete::chargerQuetesPersonnage($personnageId, $personnage ?: []);
+        $journal = Journal::chargerEntreesPersonnage($personnageId, $personnage ?: [], $quetes, $competences);
+        $carte = Carte::chargerDonneesFenetre($personnage ?: []);
         return [
             'personnage' => $personnage ?: [],
             'inventaire' => $inventaire,
             'poids_inventaire' => $poidsInventaire,
             'equipements' => $equipements,
+            'competences' => $competences,
+            'quetes' => $quetes,
+            'journal' => $journal,
+            'carte' => $carte,
         ];
     }
 

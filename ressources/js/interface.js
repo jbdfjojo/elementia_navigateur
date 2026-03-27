@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
     try {
         initialiserGestionnaireFenetresJeu();
         initialiserOngletsInventaire();
+        initialiserPanneauxDetailsJeu();
     } catch (erreur) {
         afficherErreurJeu(erreur, 'Erreur pendant l\'initialisation de l\'interface');
         throw erreur;
@@ -876,4 +877,118 @@ function initialiserOngletsInventaire() {
             });
         });
     }
+}
+
+function initialiserPanneauxDetailsJeu() {
+    document.querySelectorAll('.bouton-entree-detail').forEach(function (bouton) {
+        bouton.addEventListener('click', function () {
+            const cible = bouton.getAttribute('data-cible-detail');
+            if (!cible) {
+                return;
+            }
+
+            const zoneDetail = document.querySelector('[data-zone-detail="' + cible + '"]');
+            if (!zoneDetail) {
+                return;
+            }
+
+            const liste = bouton.closest('.liste-entrees-jeu');
+            if (liste) {
+                liste.querySelectorAll('.bouton-entree-detail').forEach(function (autreBouton) {
+                    autreBouton.classList.remove('entree-active');
+                });
+            }
+
+            bouton.classList.add('entree-active');
+
+            const mappingsTexte = {
+                competence: {
+                    nom: 'nom',
+                    resume: 'resume',
+                    description: 'description',
+                    famille: 'famille',
+                    element: 'element',
+                    classe: 'classe',
+                    portee: 'portee',
+                    cible: 'cible',
+                    formule: 'formule',
+                    progression: 'progression'
+                },
+                quete: {
+                    titre: 'titre',
+                    resume: 'resume',
+                    description: 'description',
+                    objectif: 'objectif',
+                    recompense: 'recompense',
+                    etat: 'etat',
+                    categorie: 'categorie',
+                    zone: 'zone',
+                    date: 'date',
+                    progression: 'progression',
+                    'progression-barre': 'progression'
+                },
+                journal: {
+                    titre: 'titre',
+                    resume: 'resume',
+                    details: 'details',
+                    categorie: 'categorie',
+                    'categorie-secondaire': 'categorie',
+                    importance: 'importance',
+                    date: 'date'
+                }
+            };
+
+            const mappingActif = mappingsTexte[cible] || {};
+
+            Object.keys(mappingActif).forEach(function (cleDetail) {
+                const champ = zoneDetail.querySelector('[data-detail="' + cleDetail + '"]');
+                if (!champ) {
+                    return;
+                }
+
+                const valeur = bouton.dataset[mappingActif[cleDetail]] || '';
+                champ.textContent = valeur !== '' ? valeur : '—';
+            });
+
+            if (cible === 'competence') {
+                const niveau = bouton.dataset.niveau || '1';
+                const slot = bouton.dataset.slot || '1';
+                const cout = bouton.dataset.cout || '0';
+                const ressource = bouton.dataset.ressource || 'PM';
+                const puissance = bouton.dataset.puissance || '0';
+                const xp = bouton.dataset.xp || '0';
+                const xpSuivante = bouton.dataset.xpSuivante || '100';
+                const classe = bouton.dataset.classe || 'Toutes';
+                const progression = bouton.dataset.progression || 'Cette compétence progressera avec votre utilisation et les futures règles de progression.';
+                const formule = bouton.dataset.formule || 'Aucune formule détaillée enregistrée pour le moment.';
+
+                const niveauNode = zoneDetail.querySelector('[data-detail="niveau"]');
+                const slotNode = zoneDetail.querySelector('[data-detail="slot"]');
+                const coutNode = zoneDetail.querySelector('[data-detail="cout"]');
+                const puissanceNode = zoneDetail.querySelector('[data-detail="puissance"]');
+                const xpNode = zoneDetail.querySelector('[data-detail="xp"]');
+                const classeNode = zoneDetail.querySelector('[data-detail="classe"]');
+                const progressionNode = zoneDetail.querySelector('[data-detail="progression"]');
+                const formuleNode = zoneDetail.querySelector('[data-detail="formule"]');
+                const barre = zoneDetail.querySelector('[data-detail-style="xp"]');
+
+                if (niveauNode) niveauNode.textContent = 'Niv. ' + niveau;
+                if (slotNode) slotNode.textContent = 'Slot ' + slot;
+                if (coutNode) coutNode.textContent = cout + ' ' + ressource;
+                if (puissanceNode) puissanceNode.textContent = puissance;
+                if (xpNode) xpNode.textContent = xp + ' / ' + xpSuivante;
+                if (classeNode) classeNode.textContent = classe !== '' ? classe : 'Toutes';
+                if (progressionNode) progressionNode.textContent = progression;
+                if (formuleNode) formuleNode.textContent = formule;
+                if (barre) barre.style.width = (bouton.dataset.pourcentageXp || '0') + '%';
+            }
+
+            if (cible === 'quete') {
+                const barre = zoneDetail.querySelector('[data-detail-style="progression"]');
+                if (barre) {
+                    barre.style.width = (bouton.dataset.pourcentage || '0') + '%';
+                }
+            }
+        });
+    });
 }

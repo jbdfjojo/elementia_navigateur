@@ -1,3 +1,6 @@
+<?php
+$positionCarteJoueur = $carte['position_joueur'] ?? ['x' => (int) ($personnage['position_x'] ?? 18), 'y' => (int) ($personnage['position_y'] ?? 12)];
+?>
 <div class="zone-monde">
     <div
         id="zone-carte-monde"
@@ -5,8 +8,8 @@
         data-taille-case="64"
         data-colonnes="40"
         data-lignes="27"
-        data-colonne-depart="18"
-        data-ligne-depart="12"
+        data-colonne-depart="<?= (int) ($positionCarteJoueur['x'] ?? 18); ?>"
+        data-ligne-depart="<?= (int) ($positionCarteJoueur['y'] ?? 12); ?>"
         data-largeur-monde="2534"
         data-hauteur-monde="1690"
     >
@@ -34,6 +37,8 @@
                         title="Cliquer pour afficher les déplacements possibles"
                     >
                         <span class="repere-joueur-noyau"></span>
+                        <span id="fleche-direction-quete" class="fleche-direction-joueur fleche-direction-quete" aria-hidden="true">➜</span>
+                        <span id="fleche-direction-repere" class="fleche-direction-joueur fleche-direction-repere" aria-hidden="true">➜</span>
                     </div>
                 </div>
             </div>

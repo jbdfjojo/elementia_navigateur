@@ -76,6 +76,8 @@ $personnage_id_body = isset($_SESSION['personnage_id']) ? (int) $_SESSION['perso
     <?php if ($est_vue_jeu) : ?>
         <script src="ressources/js/jeu.js"></script>
         <script src="ressources/js/carte.js"></script>
+        <script src="ressources/js/carte_monde.js"></script>
+        <script src="ressources/js/carte_live.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 document.querySelectorAll('[data-message-temporaire="oui"]').forEach(function (message) {

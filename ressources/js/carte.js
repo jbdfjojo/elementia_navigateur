@@ -64,6 +64,128 @@
             casesAtteignables: []
         };
 
+        const clePositionJoueur = 'elementia_position_joueur_v1';
+        const cleDestinationActive = 'elementia_destination_active_v1';
+        const cleQueteSuivie = 'elementia_quete_suivie_v1';
+        const iconeDirectionJoueur = document.getElementById('icone-direction-joueur');
+        const texteDirectionJoueur = document.getElementById('texte-direction-joueur');
+
+
+        function lireStockageJson(cle) {
+            try {
+                const brut = window.localStorage.getItem(cle);
+                return brut ? JSON.parse(brut) : null;
+            } catch (erreur) {
+                return null;
+            }
+        }
+
+        function ecrireStockageJson(cle, donnees) {
+            if (donnees === null || typeof donnees === 'undefined') {
+                window.localStorage.removeItem(cle);
+                return;
+            }
+
+            window.localStorage.setItem(cle, JSON.stringify(donnees));
+        }
+
+        function chargerPositionPersistante() {
+            const position = lireStockageJson(clePositionJoueur);
+            if (!position) {
+                return;
+            }
+
+            etatCarte.colonne = borner(Number(position.x || etatCarte.colonne), 0, etatCarte.colonneMax);
+            etatCarte.ligne = borner(Number(position.y || etatCarte.ligne), 0, etatCarte.ligneMax);
+        }
+
+        function sauvegarderPositionJoueur() {
+            const position = {
+                x: etatCarte.colonne,
+                y: etatCarte.ligne
+            };
+
+            ecrireStockageJson(clePositionJoueur, position);
+            window.dispatchEvent(new CustomEvent('elementia-position-joueur-changee', { detail: position }));
+        }
+
+        function lireDestinationActive() {
+            const destinationPersonnalisee = lireStockageJson(cleDestinationActive);
+            if (destinationPersonnalisee && Number.isFinite(Number(destinationPersonnalisee.x)) && Number.isFinite(Number(destinationPersonnalisee.y))) {
+                return destinationPersonnalisee;
+            }
+
+            const queteSuivie = lireStockageJson(cleQueteSuivie);
+            if (queteSuivie && Number.isFinite(Number(queteSuivie.x)) && Number.isFinite(Number(queteSuivie.y))) {
+                return queteSuivie;
+            }
+
+            return null;
+        }
+
+        function calculerDirectionTexte(destination) {
+            if (!destination) {
+                return {
+                    icone: '•',
+                    texte: 'Aucune destination suivie'
+                };
+            }
+
+            const deltaX = Number(destination.x) - etatCarte.colonne;
+            const deltaY = Number(destination.y) - etatCarte.ligne;
+
+            if (deltaX === 0 && deltaY === 0) {
+                return {
+                    icone: '✓',
+                    texte: 'Destination atteinte : ' + (destination.nom || destination.titre || 'repère')
+                };
+            }
+
+            let directionVerticale = '';
+            let directionHorizontale = '';
+            let iconeVerticale = '';
+            let iconeHorizontale = '';
+
+            if (deltaY < 0) {
+                directionVerticale = 'nord';
+                iconeVerticale = '↑';
+            } else if (deltaY > 0) {
+                directionVerticale = 'sud';
+                iconeVerticale = '↓';
+            }
+
+            if (deltaX < 0) {
+                directionHorizontale = 'ouest';
+                iconeHorizontale = '←';
+            } else if (deltaX > 0) {
+                directionHorizontale = 'est';
+                iconeHorizontale = '→';
+            }
+
+            const morceaux = [directionVerticale, directionHorizontale].filter(Boolean);
+            const direction = morceaux.join('-');
+            const icone = (iconeVerticale || '') + (iconeHorizontale || '');
+
+            return {
+                icone: icone || '•',
+                texte: (destination.nom || destination.titre || 'Destination') + ' · ' + direction + ' · ' + Math.abs(deltaX) + ' case(s) X / ' + Math.abs(deltaY) + ' case(s) Y'
+            };
+        }
+
+        function mettreAJourDirectionActive() {
+            const direction = calculerDirectionTexte(lireDestinationActive());
+
+            if (iconeDirectionJoueur) {
+                iconeDirectionJoueur.textContent = direction.icone;
+            }
+
+            if (texteDirectionJoueur) {
+                texteDirectionJoueur.textContent = direction.texte;
+            }
+        }
+
+        chargerPositionPersistante();
+
         function cleCase(colonne, ligne) {
             return colonne + '_' + ligne;
         }
@@ -124,6 +246,10 @@
         function mettreAJourCoordonneesAffichees() {
             const textePosition = 'Case ' + etatCarte.colonne + ' x ' + etatCarte.ligne;
             valeurPositionJoueur.textContent = textePosition;
+            const valeurPositionCarteComplete = document.getElementById('valeur-position-carte-complete');
+            if (valeurPositionCarteComplete) {
+                valeurPositionCarteComplete.textContent = etatCarte.colonne + ' x ' + etatCarte.ligne;
+            }
 
             if (debugEtatPosition) {
                 debugEtatPosition.textContent = etatCarte.colonne + ' x ' + etatCarte.ligne;
@@ -455,6 +581,8 @@ function obtenirGeometrieAffichee() {
             mettreAJourCoordonneesAffichees();
             mettreAJourInformationsEtat();
             mettreAJourEvenements(typeCaseActuelle);
+            mettreAJourDirectionActive();
+            sauvegarderPositionJoueur();
             masquerCasesAtteignables();
 
             ajouterLogDebug('Déplacement validé vers ' + etatCarte.colonne + ' x ' + etatCarte.ligne + ' depuis ' + source + '.');
@@ -506,6 +634,8 @@ function obtenirGeometrieAffichee() {
             mettreAJourCoordonneesAffichees();
             mettreAJourInformationsEtat();
             mettreAJourEvenements(obtenirTypeCase(etatCarte.colonne, etatCarte.ligne));
+            mettreAJourDirectionActive();
+            sauvegarderPositionJoueur();
 
             carteDejaInitialisee = true;
             ajouterLogDebug('Carte prête : grille officielle 40 x 27 chargée.');
@@ -515,13 +645,6 @@ function obtenirGeometrieAffichee() {
             evenement.preventDefault();
             evenement.stopPropagation();
             alternerCasesAtteignables();
-        });
-
-        repereJoueur.addEventListener('keydown', function (evenement) {
-            if (evenement.key === 'Enter' || evenement.key === ' ') {
-                evenement.preventDefault();
-                alternerCasesAtteignables();
-            }
         });
 
         surbrillance.addEventListener('click', function (evenement) {
@@ -543,26 +666,6 @@ function obtenirGeometrieAffichee() {
                 if (etatCarte.surbrillanceActive) {
                     dessinerCasesAtteignables();
                 }
-            }
-        });
-
-        document.addEventListener('keydown', function (evenement) {
-            const tagCible = (evenement.target && evenement.target.tagName) ? evenement.target.tagName.toLowerCase() : '';
-            if (tagCible === 'input' || tagCible === 'textarea' || tagCible === 'select') {
-                return;
-            }
-
-            if (evenement.key === 'ArrowUp' || evenement.key === 'z' || evenement.key === 'Z') {
-                deplacerJoueurAuClavier(0, -1);
-            }
-            if (evenement.key === 'ArrowDown' || evenement.key === 's' || evenement.key === 'S') {
-                deplacerJoueurAuClavier(0, 1);
-            }
-            if (evenement.key === 'ArrowLeft' || evenement.key === 'q' || evenement.key === 'Q') {
-                deplacerJoueurAuClavier(-1, 0);
-            }
-            if (evenement.key === 'ArrowRight' || evenement.key === 'd' || evenement.key === 'D') {
-                deplacerJoueurAuClavier(1, 0);
             }
         });
 
@@ -589,6 +692,30 @@ function obtenirGeometrieAffichee() {
                 ajouterLogDebug('Logs réinitialisés.');
             });
         }
+
+
+        window.addEventListener('storage', function (evenement) {
+            if (evenement.key === cleDestinationActive || evenement.key === cleQueteSuivie) {
+                mettreAJourDirectionActive();
+            }
+
+            if (evenement.key === clePositionJoueur) {
+                const position = lireStockageJson(clePositionJoueur);
+                if (!position) {
+                    return;
+                }
+
+                etatCarte.colonne = borner(Number(position.x || etatCarte.colonne), 0, etatCarte.colonneMax);
+                etatCarte.ligne = borner(Number(position.y || etatCarte.ligne), 0, etatCarte.ligneMax);
+                mettreAJourRepereJoueur();
+                mettreAJourCamera();
+                mettreAJourCoordonneesAffichees();
+                mettreAJourInformationsEtat();
+                mettreAJourDirectionActive();
+            }
+        });
+
+        window.addEventListener('elementia-destination-changee', mettreAJourDirectionActive);
 
         imageCarte.addEventListener('error', function () {
             console.error('[Elementia] Image carte introuvable : ' + cheminCarte);

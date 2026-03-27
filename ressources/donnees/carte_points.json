@@ -1,0 +1,65 @@
+[
+  {
+    "id": "verdalis",
+    "nom": "Verdalis",
+    "etiquette": "Verdalis",
+    "type": "ville",
+    "pourcentage_x": 52.3,
+    "pourcentage_y": 51.2,
+    "orientation": "droite"
+  },
+  {
+    "id": "grand_arbre",
+    "nom": "Grand Arbre",
+    "etiquette": "Grand Arbre",
+    "type": "donjon",
+    "pourcentage_x": 49.8,
+    "pourcentage_y": 47.1,
+    "orientation": "haut"
+  },
+  {
+    "id": "capitale_neutre",
+    "nom": "Capitale neutre",
+    "etiquette": "Capitale",
+    "type": "ville",
+    "pourcentage_x": 52.6,
+    "pourcentage_y": 42.2,
+    "orientation": "droite"
+  },
+  {
+    "id": "aqualys",
+    "nom": "Aqualys",
+    "etiquette": "Aqualys",
+    "type": "ville",
+    "pourcentage_x": 65.1,
+    "pourcentage_y": 40.0,
+    "orientation": "droite"
+  },
+  {
+    "id": "ponton_aqualys",
+    "nom": "Ponton d’Aqualys",
+    "etiquette": "Ponton",
+    "type": "ponton",
+    "pourcentage_x": 67.2,
+    "pourcentage_y": 42.3,
+    "orientation": "bas"
+  },
+  {
+    "id": "pyros",
+    "nom": "Pyros",
+    "etiquette": "Pyros",
+    "type": "ville",
+    "pourcentage_x": 31.8,
+    "pourcentage_y": 76.1,
+    "orientation": "droite"
+  },
+  {
+    "id": "monastere_vents",
+    "nom": "Monastère des Vents",
+    "etiquette": "Monastère",
+    "type": "ville",
+    "pourcentage_x": 80.0,
+    "pourcentage_y": 15.4,
+    "orientation": "gauche"
+  }
+]

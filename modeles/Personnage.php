@@ -17,6 +17,69 @@ class Personnage
         return $requete->fetch();
     }
 
+
+
+    public static function corrigerPositionSiInvalide(int $personnageId): void
+    {
+        global $connexion_base;
+
+        $sqlLecture = "SELECT position_x, position_y FROM personnages WHERE id = :id LIMIT 1";
+        $requeteLecture = $connexion_base->prepare($sqlLecture);
+        $requeteLecture->execute(['id' => $personnageId]);
+        $position = $requeteLecture->fetch();
+
+        if (!$position) {
+            return;
+        }
+
+        $positionX = (int) ($position['position_x'] ?? 0);
+        $positionY = (int) ($position['position_y'] ?? 0);
+
+        if ($positionX > 0 && $positionY > 0) {
+            return;
+        }
+
+        $sqlMiseAJour = "UPDATE personnages SET position_x = :position_x, position_y = :position_y WHERE id = :id";
+        $requeteMiseAJour = $connexion_base->prepare($sqlMiseAJour);
+        $requeteMiseAJour->execute([
+            'position_x' => 18,
+            'position_y' => 12,
+            'id' => $personnageId,
+        ]);
+    }
+
+
+    public static function chargerPosition(int $personnageId): array
+    {
+        global $connexion_base;
+
+        $sql = "SELECT position_x, position_y FROM personnages WHERE id = :id LIMIT 1";
+        $requete = $connexion_base->prepare($sql);
+        $requete->execute(['id' => $personnageId]);
+        $position = $requete->fetch() ?: [];
+
+        return [
+            'x' => max(0, (int) ($position['position_x'] ?? 18)),
+            'y' => max(0, (int) ($position['position_y'] ?? 12)),
+        ];
+    }
+
+    public static function sauvegarderPosition(int $personnageId, int $positionX, int $positionY): void
+    {
+        global $connexion_base;
+
+        $positionX = max(0, min(39, $positionX));
+        $positionY = max(0, min(26, $positionY));
+
+        $sql = "UPDATE personnages SET position_x = :position_x, position_y = :position_y WHERE id = :id";
+        $requete = $connexion_base->prepare($sql);
+        $requete->execute([
+            'id' => $personnageId,
+            'position_x' => $positionX,
+            'position_y' => $positionY,
+        ]);
+    }
+
     public static function calculerStats(int $personnageId)
     {
         global $connexion_base;

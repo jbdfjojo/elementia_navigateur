@@ -425,3 +425,64 @@
         max-height: 280px;
     }
 }
+
+
+.fleche-direction-joueur {
+    position: absolute;
+    left: 50%;
+    top: -18px;
+    transform: translate(-50%, -50%) rotate(0deg);
+    transform-origin: center center;
+    font-size: 24px;
+    line-height: 1;
+    text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+    pointer-events: auto;
+    cursor: help;
+    opacity: 0;
+}
+
+.fleche-direction-quete {
+    color: #ffd44f;
+    margin-left: -10px;
+}
+
+.fleche-direction-repere {
+    color: #ff4fa3;
+    margin-left: 10px;
+}
+
+#valeur-direction-joueur {
+    color: #ffd44f;
+    font-weight: 700;
+}
+
+.texte-aide-quetes {
+    margin: 0 0 12px;
+    font-size: 13px;
+    color: #d9d2c0;
+}
+
+.ligne-actions-quete {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.case-suivi-quete {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #f4efe2;
+}
+
+.case-suivi-quete input {
+    accent-color: #ffd44f;
+}
+
+.badge-carte-quete {
+    background: rgba(255, 212, 79, 0.22);
+    border: 1px solid rgba(255, 212, 79, 0.5);
+    color: #ffd44f;
+}
