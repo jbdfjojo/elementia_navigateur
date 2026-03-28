@@ -27,6 +27,8 @@ $catalogue_debug = Objet::listerCataloguePourDebug();
             <div class="colonne-boutons-debug">
                 <button type="button" id="bouton-debug-monture" class="bouton-parametre-principal">Activer monture</button>
                 <button type="button" id="bouton-debug-afficher-cases" class="bouton-secondaire bouton-parametre-secondaire">Afficher les cases atteignables</button>
+                <button type="button" id="bouton-debug-ville-jour" class="bouton-secondaire bouton-parametre-secondaire">Ville : jour</button>
+                <button type="button" id="bouton-debug-ville-nuit" class="bouton-secondaire bouton-parametre-secondaire">Ville : nuit</button>
                 <button type="button" id="bouton-debug-reinitialiser-logs" class="bouton-secondaire bouton-parametre-secondaire">Réinitialiser logs</button>
             </div>
         </div>

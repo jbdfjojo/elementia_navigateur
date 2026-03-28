@@ -25,11 +25,24 @@
         const ligneEvenementSecondaire = document.getElementById('ligne-evenement-secondaire');
         const boutonDebugMonture = document.getElementById('bouton-debug-monture');
         const boutonDebugAfficherCases = document.getElementById('bouton-debug-afficher-cases');
+        const boutonDebugVilleJour = document.getElementById('bouton-debug-ville-jour');
+        const boutonDebugVilleNuit = document.getElementById('bouton-debug-ville-nuit');
         const boutonDebugReinitialiserLogs = document.getElementById('bouton-debug-reinitialiser-logs');
         const debugEtatMode = document.getElementById('debug-etat-mode');
         const debugEtatBateau = document.getElementById('debug-etat-bateau');
         const debugEtatPosition = document.getElementById('debug-etat-position');
         const debugJournalDeplacement = document.getElementById('debug-journal-deplacement');
+        const superpositionVille = document.getElementById('superposition-ville');
+        const imageVilleActive = document.getElementById('image-ville-active');
+        const titreVilleActive = document.getElementById('titre-ville-active');
+        const sousTitreVilleActive = document.getElementById('sous-titre-ville-active');
+        const boutonFermerVille = document.getElementById('bouton-fermer-ville');
+        const calquePointsVille = document.getElementById('calque-points-ville');
+        const fenetreLieuVille = document.getElementById('fenetre-lieu-ville');
+        const titreLieuVille = document.getElementById('titre-lieu-ville');
+        const texteLieuVille = document.getElementById('texte-lieu-ville');
+        const boutonFermerLieuVille = document.getElementById('bouton-fermer-lieu-ville');
+        const boutonRetourVille = document.getElementById('bouton-retour-ville');
 
         if (!viewport || !contenu || !imageCarte || !grille || !surbrillance || !surbrillanceLieux || !repereJoueur || !valeurPositionJoueur) {
             console.error('[Elementia] DOM carte incomplet.');
@@ -69,7 +82,51 @@
         const cleQueteSuivie = 'elementia_quete_suivie_v1';
         const iconeDirectionJoueur = document.getElementById('icone-direction-joueur');
         const texteDirectionJoueur = document.getElementById('texte-direction-joueur');
+        const configurationVilleElement = document.getElementById('configuration-villes-jeu');
+        let configurationVilles = { villes: {}, points_monde: [], points_interieur: [] };
+        const cleModeVille = 'elementia_mode_ville_debug_v1';
+        const etatVille = {
+            ouverte: false,
+            code: null,
+            caseDeclenchee: null,
+            caseFermee: null,
+            mode: 'jour'
+        };
 
+        function decoderEntitesHtml(texte) {
+            if (!texte) {
+                return '';
+            }
+
+            const zoneTemporaire = document.createElement('textarea');
+            zoneTemporaire.innerHTML = texte;
+            return zoneTemporaire.value;
+        }
+
+        function lireConfigurationVilles() {
+            if (!configurationVilleElement) {
+                return configurationVilles;
+            }
+
+            const contenuBrut = String(configurationVilleElement.textContent || '').trim();
+            if (!contenuBrut) {
+                return configurationVilles;
+            }
+
+            try {
+                return JSON.parse(contenuBrut) || configurationVilles;
+            } catch (erreurBrute) {
+                try {
+                    const contenuDecode = decoderEntitesHtml(contenuBrut).trim();
+                    return JSON.parse(contenuDecode) || configurationVilles;
+                } catch (erreurDecodee) {
+                    console.warn('[Elementia] Configuration des villes invalide.', erreurDecodee);
+                    return configurationVilles;
+                }
+            }
+        }
+
+        configurationVilles = lireConfigurationVilles();
 
         function lireStockageJson(cle) {
             try {
@@ -584,6 +641,7 @@ function obtenirGeometrieAffichee() {
             mettreAJourDirectionActive();
             sauvegarderPositionJoueur();
             masquerCasesAtteignables();
+            verifierOuvertureVilleAutomatique();
 
             ajouterLogDebug('Déplacement validé vers ' + etatCarte.colonne + ' x ' + etatCarte.ligne + ' depuis ' + source + '.');
             ajouterLogDebug('Type de case : ' + typeCaseActuelle + '.');
@@ -603,6 +661,280 @@ function obtenirGeometrieAffichee() {
             }
 
             deplacerJoueurVers(caseCible.colonne, caseCible.ligne, 'clavier');
+        }
+
+
+        function obtenirCleCaseActuelle() {
+            return etatCarte.colonne + '_' + etatCarte.ligne;
+        }
+
+        function obtenirModeVilleActuel() {
+            const mode = lireStockageJson(cleModeVille);
+            if (mode === 'nuit') {
+                return 'nuit';
+            }
+            return 'jour';
+        }
+
+        function fermerFenetreLieuVille() {
+            if (!fenetreLieuVille) {
+                return;
+            }
+
+            fenetreLieuVille.classList.add('fenetre-lieu-ville-cachee');
+        }
+
+        function ouvrirFenetreLieuVille(pointVille) {
+            if (!fenetreLieuVille || !titreLieuVille || !texteLieuVille || !pointVille) {
+                return;
+            }
+
+            titreLieuVille.textContent = pointVille.nom || 'Lieu';
+
+            if (pointVille.categorie === 'sortie') {
+                texteLieuVille.textContent = 'Cette porte vous permettra bientôt de quitter la ville avec un dialogue de garde. Pour cette étape, elle referme simplement la vue de ville.';
+            } else {
+                texteLieuVille.textContent = 'La fenêtre de ce lieu est maintenant sélectionnable. Le contenu détaillé du bâtiment et les PNJ seront branchés à l’étape suivante.';
+            }
+
+            fenetreLieuVille.classList.remove('fenetre-lieu-ville-cachee');
+        }
+
+        function appliquerImageVille() {
+            if (!imageVilleActive || !etatVille.code || !configurationVilles.villes || !configurationVilles.villes[etatVille.code]) {
+                return;
+            }
+
+            const ville = configurationVilles.villes[etatVille.code];
+            const source = etatVille.mode === 'nuit' ? ville.image_nuit : ville.image_jour;
+            imageVilleActive.src = source || '';
+            imageVilleActive.alt = ville.nom ? ('Vue de ' + ville.nom) : 'Vue de ville';
+        }
+
+        function synchroniserCalquePointsVille() {
+            if (!calquePointsVille || !imageVilleActive) {
+                return;
+            }
+
+            const conteneurVille = calquePointsVille.parentElement;
+            if (!conteneurVille) {
+                return;
+            }
+
+            const rectangleImage = imageVilleActive.getBoundingClientRect();
+            const rectangleConteneur = conteneurVille.getBoundingClientRect();
+
+            if (rectangleImage.width <= 0 || rectangleImage.height <= 0 || rectangleConteneur.width <= 0 || rectangleConteneur.height <= 0) {
+                return;
+            }
+
+            calquePointsVille.style.position = 'absolute';
+            calquePointsVille.style.left = (rectangleImage.left - rectangleConteneur.left) + 'px';
+            calquePointsVille.style.top = (rectangleImage.top - rectangleConteneur.top) + 'px';
+            calquePointsVille.style.width = rectangleImage.width + 'px';
+            calquePointsVille.style.height = rectangleImage.height + 'px';
+        }
+
+        function rafraichirVilleAffichee() {
+            if (!etatVille.ouverte) {
+                return;
+            }
+
+            synchroniserCalquePointsVille();
+            construirePointsVille();
+        }
+
+        function determinerVilleDepuisPosition() {
+            const cleCaseActuelle = obtenirCleCaseActuelle();
+            const villes = configurationVilles && configurationVilles.villes ? configurationVilles.villes : {};
+
+            for (const codeVille in villes) {
+                if (!Object.prototype.hasOwnProperty.call(villes, codeVille)) {
+                    continue;
+                }
+
+                const ville = villes[codeVille];
+                const casesMonde = Array.isArray(ville.cases_monde) ? ville.cases_monde : [];
+
+                for (let indexCase = 0; indexCase < casesMonde.length; indexCase += 1) {
+                    const caseMonde = casesMonde[indexCase];
+                    const cleCaseVille = String(Number(caseMonde.x || 0)) + '_' + String(Number(caseMonde.y || 0));
+
+                    if (cleCaseVille === cleCaseActuelle) {
+                        return {
+                            code: codeVille,
+                            nom: ville.nom || codeVille
+                        };
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        function construirePointsVille() {
+            if (!calquePointsVille) {
+                return;
+            }
+
+            calquePointsVille.innerHTML = '';
+
+            const villes = configurationVilles && configurationVilles.villes ? configurationVilles.villes : {};
+            const villeActiveConfiguration = etatVille.code && villes[etatVille.code] ? villes[etatVille.code] : null;
+            const points = villeActiveConfiguration && Array.isArray(villeActiveConfiguration.points_interieur)
+                ? villeActiveConfiguration.points_interieur
+                : [];
+
+            points.forEach(function (pointVille) {
+                const positionX = Number(pointVille.x);
+                const positionY = Number(pointVille.y);
+
+                if (!Number.isFinite(positionX) || !Number.isFinite(positionY)) {
+                    return;
+                }
+
+                const bouton = document.createElement('button');
+                bouton.type = 'button';
+                bouton.className = 'point-interet-ville point-interet-ville-' + (pointVille.categorie || 'lieu');
+                bouton.style.left = positionX + '%';
+                bouton.style.top = positionY + '%';
+                bouton.dataset.id = pointVille.id || '';
+                bouton.dataset.categorie = pointVille.categorie || 'lieu';
+                bouton.title = pointVille.nom || 'Point d’intérêt';
+                bouton.setAttribute('aria-label', pointVille.nom || 'Point d’intérêt');
+
+                const icone = document.createElement('span');
+                icone.className = 'point-interet-ville-icone';
+                icone.textContent = pointVille.icone || '•';
+
+                const etiquette = document.createElement('span');
+                etiquette.className = 'point-interet-ville-etiquette';
+                etiquette.textContent = pointVille.nom || 'Lieu';
+
+                bouton.appendChild(icone);
+                bouton.appendChild(etiquette);
+
+                bouton.addEventListener('click', function (evenement) {
+                    evenement.preventDefault();
+                    evenement.stopPropagation();
+
+                    if ((pointVille.categorie || 'lieu') === 'sortie') {
+                        fermerFenetreLieuVille();
+
+                        if (Number.isFinite(Number(pointVille.destination_x)) && Number.isFinite(Number(pointVille.destination_y))) {
+                            etatCarte.colonne = borner(Number(pointVille.destination_x), 0, etatCarte.colonneMax);
+                            etatCarte.ligne = borner(Number(pointVille.destination_y), 0, etatCarte.ligneMax);
+
+                            const typeCaseActuelle = obtenirTypeCase(etatCarte.colonne, etatCarte.ligne);
+                            etatCarte.bateauDisponible = obtenirEtatBateauApresArrivee(typeCaseActuelle);
+
+                            if (etatVille.code === 'aqualis') {
+                                etatCarte.bateauDisponible = true;
+                            }
+
+                            mettreAJourRepereJoueur();
+                            mettreAJourCamera();
+                            mettreAJourCoordonneesAffichees();
+                            mettreAJourInformationsEtat();
+                            mettreAJourEvenements(typeCaseActuelle);
+                            mettreAJourDirectionActive();
+                            sauvegarderPositionJoueur();
+                            masquerCasesAtteignables();
+                        }
+
+                        fermerSuperpositionVille(true);
+                        return;
+                    }
+
+                    ouvrirFenetreLieuVille(pointVille);
+                });
+
+                calquePointsVille.appendChild(bouton);
+            });
+        }
+
+        function ouvrirSuperpositionVille(pointVille) {
+            if (!superpositionVille || !pointVille || !configurationVilles.villes || !configurationVilles.villes[pointVille.code]) {
+                return;
+            }
+
+            etatVille.code = pointVille.code;
+            etatVille.ouverte = true;
+            etatVille.caseDeclenchee = obtenirCleCaseActuelle();
+            etatVille.caseFermee = null;
+            etatVille.mode = obtenirModeVilleActuel();
+
+            const ville = configurationVilles.villes[pointVille.code];
+            if (titreVilleActive) {
+                titreVilleActive.textContent = ville.nom || pointVille.nom || 'Ville';
+            }
+            if (sousTitreVilleActive) {
+                sousTitreVilleActive.textContent = 'Choisissez un lieu ou une porte pour continuer.';
+            }
+
+            appliquerImageVille();
+            fermerFenetreLieuVille();
+            superpositionVille.classList.remove('superposition-ville-cachee');
+            superpositionVille.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('ville-ouverte');
+
+            requestAnimationFrame(function () {
+                rafraichirVilleAffichee();
+            });
+
+            ajouterLogDebug('Ville ouverte : ' + (ville.nom || pointVille.nom || 'Ville') + '.');
+        }
+
+        function fermerSuperpositionVille(estSortieVille) {
+            if (!superpositionVille) {
+                return;
+            }
+
+            superpositionVille.classList.add('superposition-ville-cachee');
+            superpositionVille.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('ville-ouverte');
+            fermerFenetreLieuVille();
+
+            etatVille.ouverte = false;
+            etatVille.code = null;
+            etatVille.mode = obtenirModeVilleActuel();
+            etatVille.caseFermee = obtenirCleCaseActuelle();
+
+            ajouterLogDebug(estSortieVille ? 'Sortie de ville demandée depuis une porte.' : 'Fenêtre de ville fermée.');
+        }
+
+        function verifierOuvertureVilleAutomatique() {
+            const cleCaseActuelle = obtenirCleCaseActuelle();
+            const pointVille = determinerVilleDepuisPosition();
+
+            if (!pointVille) {
+                etatVille.caseDeclenchee = null;
+                etatVille.caseFermee = null;
+                if (etatVille.ouverte) {
+                    fermerSuperpositionVille(false);
+                }
+                return;
+            }
+
+            if (etatVille.ouverte) {
+                return;
+            }
+
+            if (etatVille.caseFermee === cleCaseActuelle) {
+                return;
+            }
+
+            ouvrirSuperpositionVille(pointVille);
+        }
+
+        function appliquerModeVille(mode) {
+            const modeNormalise = mode === 'nuit' ? 'nuit' : 'jour';
+            ecrireStockageJson(cleModeVille, modeNormalise);
+            etatVille.mode = modeNormalise;
+            if (etatVille.ouverte) {
+                appliquerImageVille();
+            }
+            ajouterLogDebug('Mode d’affichage des villes : ' + modeNormalise + '.');
         }
 
         function finaliserInitialisation() {
@@ -627,7 +959,7 @@ function obtenirGeometrieAffichee() {
             surbrillanceLieux.style.pointerEvents = 'none';
             dessinerSurbrillancesLieux();
 
-            etatCarte.bateauDisponible = obtenirTypeCase(etatCarte.colonne, etatCarte.ligne) === 'ponton';
+            etatCarte.bateauDisponible = obtenirTypeCase(etatCarte.colonne, etatCarte.ligne) === 'ponton' || obtenirTypeCase(etatCarte.colonne, etatCarte.ligne) === 'eau';
 
             mettreAJourRepereJoueur();
             mettreAJourCamera();
@@ -636,6 +968,8 @@ function obtenirGeometrieAffichee() {
             mettreAJourEvenements(obtenirTypeCase(etatCarte.colonne, etatCarte.ligne));
             mettreAJourDirectionActive();
             sauvegarderPositionJoueur();
+            etatVille.mode = obtenirModeVilleActuel();
+            verifierOuvertureVilleAutomatique();
 
             carteDejaInitialisee = true;
             ajouterLogDebug('Carte prête : grille officielle 40 x 27 chargée.');
@@ -666,6 +1000,9 @@ function obtenirGeometrieAffichee() {
                 if (etatCarte.surbrillanceActive) {
                     dessinerCasesAtteignables();
                 }
+                if (etatVille.ouverte) {
+                    rafraichirVilleAffichee();
+                }
             }
         });
 
@@ -693,10 +1030,43 @@ function obtenirGeometrieAffichee() {
             });
         }
 
+        if (boutonDebugVilleJour) {
+            boutonDebugVilleJour.addEventListener('click', function () {
+                appliquerModeVille('jour');
+            });
+        }
+
+        if (boutonDebugVilleNuit) {
+            boutonDebugVilleNuit.addEventListener('click', function () {
+                appliquerModeVille('nuit');
+            });
+        }
+
+        if (boutonFermerVille) {
+            boutonFermerVille.addEventListener('click', function () {
+                fermerSuperpositionVille(false);
+            });
+        }
+
+        if (boutonFermerLieuVille) {
+            boutonFermerLieuVille.addEventListener('click', fermerFenetreLieuVille);
+        }
+
+        if (boutonRetourVille) {
+            boutonRetourVille.addEventListener('click', fermerFenetreLieuVille);
+        }
+
 
         window.addEventListener('storage', function (evenement) {
             if (evenement.key === cleDestinationActive || evenement.key === cleQueteSuivie) {
                 mettreAJourDirectionActive();
+            }
+
+            if (evenement.key === cleModeVille) {
+                etatVille.mode = obtenirModeVilleActuel();
+                if (etatVille.ouverte) {
+                    appliquerImageVille();
+                }
             }
 
             if (evenement.key === clePositionJoueur) {
@@ -707,15 +1077,26 @@ function obtenirGeometrieAffichee() {
 
                 etatCarte.colonne = borner(Number(position.x || etatCarte.colonne), 0, etatCarte.colonneMax);
                 etatCarte.ligne = borner(Number(position.y || etatCarte.ligne), 0, etatCarte.ligneMax);
+                const typeCaseActuelle = obtenirTypeCase(etatCarte.colonne, etatCarte.ligne);
+                etatCarte.bateauDisponible = typeCaseActuelle === 'ponton' || typeCaseActuelle === 'eau';
                 mettreAJourRepereJoueur();
                 mettreAJourCamera();
                 mettreAJourCoordonneesAffichees();
                 mettreAJourInformationsEtat();
                 mettreAJourDirectionActive();
+                verifierOuvertureVilleAutomatique();
             }
         });
 
         window.addEventListener('elementia-destination-changee', mettreAJourDirectionActive);
+
+        if (imageVilleActive) {
+            imageVilleActive.addEventListener('load', function () {
+                if (etatVille.ouverte) {
+                    rafraichirVilleAffichee();
+                }
+            });
+        }
 
         imageCarte.addEventListener('error', function () {
             console.error('[Elementia] Image carte introuvable : ' + cheminCarte);
