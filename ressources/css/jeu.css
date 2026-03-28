@@ -579,6 +579,12 @@
     cursor: pointer;
     box-shadow: 0 0 0 5px rgba(0, 0, 0, 0.16), 0 0 18px rgba(0, 0, 0, 0.30);
     padding: 0;
+    transition: none;
+}
+
+.point-interet-ville:hover,
+.point-interet-ville:focus-visible {
+    transform: translate(-50%, -50%);
 }
 
 .point-interet-ville-lieu {
@@ -593,6 +599,13 @@
 .point-interet-ville-icone {
     font-size: 19px;
     line-height: 1;
+    transform: none;
+    transition: none;
+}
+
+.point-interet-ville:hover .point-interet-ville-icone,
+.point-interet-ville:focus-visible .point-interet-ville-icone {
+    transform: none;
 }
 
 .point-interet-ville-etiquette {
