@@ -38,6 +38,17 @@
             <span id="valeur-direction-joueur">Quête : aucune · Repère : aucun</span>
         </div>
 
+        <div class="ligne-information-joueur">
+            <strong>Temps</strong>
+            <span id="valeur-temps-jeu">08:00 · Jour</span>
+        </div>
+
+        <div class="ligne-information-joueur">
+            <strong>Date</strong>
+            <span id="valeur-date-jeu">Jour 1 · Mois 1</span>
+        </div>
+
+
         <div class="separateur-information-joueur"></div>
 
         <div class="zone-evenements-joueur">

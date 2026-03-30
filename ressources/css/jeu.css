@@ -567,8 +567,14 @@
 .point-interet-ville {
     position: absolute;
     transform: translate(-50%, -50%);
+    width: 42px;
+    height: 42px;
     min-width: 42px;
     min-height: 42px;
+    max-width: 42px;
+    max-height: 42px;
+    box-sizing: border-box;
+    margin: 0;
     border: 1px solid rgba(255, 255, 255, 0.82);
     border-radius: 999px;
     background: rgba(15, 15, 15, 0.82);
@@ -580,6 +586,8 @@
     box-shadow: 0 0 0 5px rgba(0, 0, 0, 0.16), 0 0 18px rgba(0, 0, 0, 0.30);
     padding: 0;
     transition: none;
+    appearance: none;
+    -webkit-appearance: none;
 }
 
 .point-interet-ville:hover,
@@ -594,6 +602,26 @@
 .point-interet-ville-sortie {
     border-color: rgba(234, 94, 94, 0.95);
     background: rgba(72, 16, 16, 0.84);
+}
+
+.point-interet-ville-pnj_ville {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    max-width: 32px;
+    max-height: 32px;
+    border-color: rgba(103, 210, 164, 0.95);
+    background: rgba(14, 34, 26, 0.88);
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.16), 0 0 14px rgba(0, 0, 0, 0.24);
+}
+
+.point-interet-ville-pnj_ville .point-interet-ville-icone {
+    font-size: 15px;
+}
+
+.point-interet-ville-pnj_ville .point-interet-ville-etiquette {
+    font-size: 11px;
 }
 
 .point-interet-ville-icone {
@@ -632,16 +660,16 @@
 
 .fenetre-lieu-ville {
     position: absolute;
-    right: 20px;
-    bottom: 20px;
-    width: 360px;
-    max-width: calc(100% - 40px);
-    background: rgba(12, 12, 12, 0.92);
+    inset: 86px 18px 18px 18px;
+    background: rgba(8, 8, 8, 0.94);
     border: 1px solid rgba(201, 161, 74, 0.35);
-    border-radius: 14px;
-    padding: 14px;
-    z-index: 3;
+    border-radius: 18px;
+    padding: 16px;
+    z-index: 4;
     box-shadow: 0 14px 30px rgba(0, 0, 0, 0.38);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
 }
 
 .fenetre-lieu-ville-cachee {
@@ -655,24 +683,225 @@
     gap: 12px;
 }
 
+.titres-fenetre-lieu-ville {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
 .fenetre-lieu-ville-entete h3 {
     margin: 0;
     color: #e0bf73;
 }
 
-.fenetre-lieu-ville p {
-    margin: 12px 0 0 0;
+.titres-fenetre-lieu-ville p {
+    margin: 0;
     color: #f2eadb;
     line-height: 1.45;
+    font-size: 13px;
+}
+
+.fenetre-lieu-ville-contenu {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.85fr);
+    gap: 16px;
+}
+
+.scene-lieu-ville {
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+    border-radius: 16px;
+    border: 1px solid rgba(201, 161, 74, 0.24);
+    background: rgba(22, 22, 22, 0.92);
+}
+
+.image-lieu-ville {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    user-select: none;
+    pointer-events: none;
+}
+
+.calque-interactions-lieu-ville {
+    position: absolute;
+    inset: 0;
+}
+
+.point-interaction-lieu {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    min-height: 56px;
+    max-width: 56px;
+    max-height: 56px;
+    box-sizing: border-box;
+    margin: 0;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.82);
+    background: rgba(10, 10, 10, 0.82);
+    color: #fff7dd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    box-shadow: 0 0 0 6px rgba(0, 0, 0, 0.18), 0 0 16px rgba(0, 0, 0, 0.32);
+    transition: none;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.point-interaction-lieu:hover,
+.point-interaction-lieu:focus-visible {
+    transform: translate(-50%, -50%);
+}
+
+.point-interaction-lieu-pnj {
+    border-color: rgba(103, 210, 164, 0.95);
+}
+
+.point-interaction-lieu-action {
+    border-color: rgba(224, 191, 115, 0.95);
+}
+
+.point-interaction-lieu-retour {
+    border-color: rgba(234, 94, 94, 0.95);
+    background: rgba(72, 16, 16, 0.84);
+}
+
+.point-interaction-lieu-icone {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.point-interaction-lieu-etiquette {
+    position: absolute;
+    left: 50%;
+    top: calc(100% + 8px);
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(12, 12, 12, 0.86);
+    border: 1px solid rgba(224, 191, 115, 0.30);
+    color: #fff7dd;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+.point-interaction-lieu:hover .point-interaction-lieu-etiquette,
+.point-interaction-lieu:focus-visible .point-interaction-lieu-etiquette {
+    opacity: 1;
+}
+
+.panneau-lieu-ville {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    border-radius: 16px;
+    border: 1px solid rgba(201, 161, 74, 0.24);
+    background: linear-gradient(180deg, rgba(15, 15, 15, 0.96) 0%, rgba(11, 11, 11, 0.96) 100%);
+    padding: 16px;
+}
+
+.texte-lieu-ville {
+    margin: 0;
+    color: #f2eadb;
+    line-height: 1.55;
+}
+
+.encart-interaction-lieu-ville {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(201, 161, 74, 0.24);
+    background: rgba(24, 24, 24, 0.92);
+}
+
+.encart-interaction-lieu-ville strong {
+    color: #e0bf73;
+}
+
+.encart-interaction-lieu-ville p {
+    margin: 0;
+    color: #f2eadb;
+    line-height: 1.5;
 }
 
 .actions-lieu-ville {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-    margin-top: 14px;
+    margin-top: auto;
+}
+
+@media (max-width: 980px) {
+    .fenetre-lieu-ville {
+        inset: 78px 12px 12px 12px;
+        padding: 12px;
+    }
+
+    .fenetre-lieu-ville-contenu {
+        grid-template-columns: 1fr;
+    }
+
+    .scene-lieu-ville {
+        min-height: 280px;
+    }
 }
 
 body.ville-ouverte .surbrillance-deplacement-monde {
     pointer-events: none;
+}
+/* --------------------------------------------------------- */
+/* CALENDRIER + TEMPS                                        */
+/* --------------------------------------------------------- */
+.contenu-fenetre-calendrier {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.carte-calendrier-principale {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.resume-calendrier {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.visuel-calendrier {
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(0, 0, 0, 0.25);
+}
+
+.visuel-calendrier img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.zone-boutons-debug-temps {
+    margin-top: 12px;
 }

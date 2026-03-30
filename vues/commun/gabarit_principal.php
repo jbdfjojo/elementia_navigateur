@@ -74,6 +74,7 @@ $personnage_id_body = isset($_SESSION['personnage_id']) ? (int) $_SESSION['perso
     <script src="ressources/js/personnages.js"></script>
 
     <?php if ($est_vue_jeu) : ?>
+        <script src="ressources/js/temps.js"></script>
         <script src="ressources/js/jeu.js"></script>
         <script src="ressources/js/carte.js"></script>
         <script src="ressources/js/carte_monde.js"></script>

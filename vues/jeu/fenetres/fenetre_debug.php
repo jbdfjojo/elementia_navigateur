@@ -33,6 +33,29 @@ $catalogue_debug = Objet::listerCataloguePourDebug();
             </div>
         </div>
 
+
+        <div class="carte-parametres-jeu">
+            <h3>Temps Elementia</h3>
+            <div class="ligne-valeur-parametre"><span>Heure</span><strong id="debug-temps-heure">08:00</strong></div>
+            <div class="ligne-valeur-parametre"><span>Date</span><strong id="debug-temps-date">Jour 1 · Mois 1</strong></div>
+            <div class="ligne-valeur-parametre"><span>Période</span><strong id="debug-temps-periode">Jour</strong></div>
+            <div class="ligne-valeur-parametre"><span>État</span><strong id="debug-temps-etat">En cours</strong></div>
+            <div class="ligne-valeur-parametre"><span>Vitesse</span><strong id="debug-temps-vitesse">x1</strong></div>
+            <div class="colonne-boutons-debug zone-boutons-debug-temps">
+                <button type="button" id="bouton-debug-temps-pause" class="bouton-parametre-principal">Pause</button>
+                <button type="button" id="bouton-debug-temps-reprendre" class="bouton-secondaire bouton-parametre-secondaire">Reprendre</button>
+                <button type="button" id="bouton-debug-temps-plus-heure" class="bouton-secondaire bouton-parametre-secondaire">+1 heure</button>
+                <button type="button" id="bouton-debug-temps-moins-heure" class="bouton-secondaire bouton-parametre-secondaire">-1 heure</button>
+                <button type="button" id="bouton-debug-temps-plus-jour" class="bouton-secondaire bouton-parametre-secondaire">+1 jour</button>
+                <button type="button" id="bouton-debug-temps-moins-jour" class="bouton-secondaire bouton-parametre-secondaire">-1 jour</button>
+                <button type="button" id="bouton-debug-temps-forcer-jour" class="bouton-secondaire bouton-parametre-secondaire">Forcer jour</button>
+                <button type="button" id="bouton-debug-temps-forcer-nuit" class="bouton-secondaire bouton-parametre-secondaire">Forcer nuit</button>
+                <button type="button" id="bouton-debug-temps-vitesse-1" class="bouton-secondaire bouton-parametre-secondaire">Vitesse x1</button>
+                <button type="button" id="bouton-debug-temps-vitesse-2" class="bouton-secondaire bouton-parametre-secondaire">Vitesse x2</button>
+                <button type="button" id="bouton-debug-temps-vitesse-5" class="bouton-secondaire bouton-parametre-secondaire">Vitesse x5</button>
+            </div>
+        </div>
+
         <div class="carte-parametres-jeu">
             <h3>Tests PV / PM</h3>
             <div class="colonne-boutons-debug">

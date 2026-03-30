@@ -879,6 +879,60 @@ function initialiserOngletsInventaire() {
     }
 }
 
+
+
+function convertirDateDetailVersTempsJeu(cible, valeur) {
+    if (!valeur) {
+        return '—';
+    }
+
+    if (window.ElementiaTemps && typeof window.ElementiaTemps.formaterDateJeuDepuisHorodatageReel === 'function') {
+        return window.ElementiaTemps.formaterDateJeuDepuisHorodatageReel(valeur);
+    }
+
+    return valeur;
+}
+
+function synchroniserDatesQuetesAvecTempsJeu() {
+    const panneauxQuetes = document.querySelectorAll('[data-cible-detail="quete"]');
+
+    panneauxQuetes.forEach(function (panneau) {
+        const boutons = panneau.querySelectorAll('.bouton-entree-detail[data-date]');
+
+        boutons.forEach(function (bouton) {
+            const dateReelle = bouton.dataset.date || '';
+            const dateFormatee = (window.ElementiaTemps && typeof window.ElementiaTemps.formaterDateJeuDepuisHorodatageReel === 'function')
+                ? window.ElementiaTemps.formaterDateJeuDepuisHorodatageReel(dateReelle)
+                : (dateReelle || '—');
+
+            bouton.dataset.dateFormatee = dateFormatee;
+
+            const cibleDate = bouton.querySelector('[data-role="date-quete"]');
+            if (cibleDate) {
+                cibleDate.textContent = dateFormatee;
+            }
+        });
+
+        const boutonActif = panneau.querySelector('.bouton-entree-detail.entree-active[data-date]')
+            || panneau.querySelector('.bouton-entree-detail[data-date]');
+
+        if (!boutonActif) {
+            return;
+        }
+
+        const zoneDetail = panneau.querySelector('.case-information-detail-panel');
+        const dateDetail = zoneDetail ? zoneDetail.querySelector('[data-detail="date"]') : null;
+
+        if (dateDetail) {
+            const dateReelle = boutonActif.dataset.date || '';
+            dateDetail.textContent = boutonActif.dataset.dateFormatee
+                || ((window.ElementiaTemps && typeof window.ElementiaTemps.formaterDateJeuDepuisHorodatageReel === 'function')
+                    ? window.ElementiaTemps.formaterDateJeuDepuisHorodatageReel(dateReelle)
+                    : (dateReelle || '—'));
+        }
+    });
+}
+
 function initialiserPanneauxDetailsJeu() {
     document.querySelectorAll('.bouton-entree-detail').forEach(function (bouton) {
         bouton.addEventListener('click', function () {
@@ -947,7 +1001,8 @@ function initialiserPanneauxDetailsJeu() {
                 }
 
                 const valeur = bouton.dataset[mappingActif[cleDetail]] || '';
-                champ.textContent = valeur !== '' ? valeur : '—';
+                const valeurAffichee = (cleDetail === 'date') ? convertirDateDetailVersTempsJeu(cible, valeur) : valeur;
+                champ.textContent = valeurAffichee !== '' ? valeurAffichee : '—';
             });
 
             if (cible === 'competence') {
@@ -990,5 +1045,11 @@ function initialiserPanneauxDetailsJeu() {
                 }
             }
         });
+    });
+
+    synchroniserDatesQuetesAvecTempsJeu();
+
+    document.addEventListener('elementia:temps-mis-a-jour', function () {
+        synchroniserDatesQuetesAvecTempsJeu();
     });
 }

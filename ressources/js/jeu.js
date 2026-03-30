@@ -71,6 +71,105 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function initialiserAffichageTempsJeu() {
+        const valeurTempsJeu = document.getElementById('valeur-temps-jeu');
+        const valeurDateJeu = document.getElementById('valeur-date-jeu');
+        const calendrierNomMois = document.getElementById('calendrier-nom-mois');
+        const calendrierJour = document.getElementById('calendrier-jour');
+        const calendrierHeure = document.getElementById('calendrier-heure');
+        const calendrierPeriode = document.getElementById('calendrier-periode');
+        const calendrierImage = document.getElementById('calendrier-image-mois');
+        const debugTempsHeure = document.getElementById('debug-temps-heure');
+        const debugTempsDate = document.getElementById('debug-temps-date');
+        const debugTempsPeriode = document.getElementById('debug-temps-periode');
+        const debugTempsEtat = document.getElementById('debug-temps-etat');
+        const debugTempsVitesse = document.getElementById('debug-temps-vitesse');
+
+        document.addEventListener('elementia:temps-mis-a-jour', function (evenement) {
+            const detail = evenement.detail;
+
+            if (valeurTempsJeu) {
+                valeurTempsJeu.textContent = detail.texte_heure + ' · ' + detail.periode;
+            }
+
+            if (valeurDateJeu) {
+                valeurDateJeu.textContent = 'Jour ' + String(detail.jour) + ' · ' + detail.nom_mois;
+            }
+
+            if (calendrierNomMois) {
+                calendrierNomMois.textContent = detail.nom_mois;
+            }
+
+            if (calendrierJour) {
+                calendrierJour.textContent = String(detail.jour);
+            }
+
+            if (calendrierHeure) {
+                calendrierHeure.textContent = detail.texte_heure;
+            }
+
+            if (calendrierPeriode) {
+                calendrierPeriode.textContent = detail.periode;
+            }
+
+            if (calendrierImage && window.ElementiaTemps) {
+                calendrierImage.src = window.ElementiaTemps.obtenirCheminImageMois(detail.mois);
+            }
+
+            if (debugTempsHeure) {
+                debugTempsHeure.textContent = detail.texte_heure;
+            }
+
+            if (debugTempsDate) {
+                debugTempsDate.textContent = 'Jour ' + String(detail.jour) + ' · ' + detail.nom_mois;
+            }
+
+            if (debugTempsPeriode) {
+                debugTempsPeriode.textContent = detail.periode;
+            }
+
+            if (debugTempsEtat) {
+                debugTempsEtat.textContent = detail.est_en_pause ? 'En pause' : 'En cours';
+            }
+
+            if (debugTempsVitesse) {
+                debugTempsVitesse.textContent = 'x' + String(detail.vitesse);
+            }
+        });
+
+        if (window.ElementiaTemps) {
+            window.ElementiaTemps.diffuserMiseAJourTemps();
+        }
+    }
+
+    function initialiserDebugTempsJeu() {
+        const configurationBoutons = [
+            ['bouton-debug-temps-pause', function () { window.ElementiaTemps.pause(); }],
+            ['bouton-debug-temps-reprendre', function () { window.ElementiaTemps.reprendre(); }],
+            ['bouton-debug-temps-plus-heure', function () { window.ElementiaTemps.ajouterHeures(1); }],
+            ['bouton-debug-temps-moins-heure', function () { window.ElementiaTemps.ajouterHeures(-1); }],
+            ['bouton-debug-temps-plus-jour', function () { window.ElementiaTemps.ajouterJours(1); }],
+            ['bouton-debug-temps-moins-jour', function () { window.ElementiaTemps.ajouterJours(-1); }],
+            ['bouton-debug-temps-forcer-jour', function () { window.ElementiaTemps.forcerJour(); }],
+            ['bouton-debug-temps-forcer-nuit', function () { window.ElementiaTemps.forcerNuit(); }],
+            ['bouton-debug-temps-vitesse-1', function () { window.ElementiaTemps.definirVitesse(1); }],
+            ['bouton-debug-temps-vitesse-2', function () { window.ElementiaTemps.definirVitesse(2); }],
+            ['bouton-debug-temps-vitesse-5', function () { window.ElementiaTemps.definirVitesse(5); }]
+        ];
+
+        configurationBoutons.forEach(function (configuration) {
+            const bouton = document.getElementById(configuration[0]);
+
+            if (!bouton || !window.ElementiaTemps) {
+                return;
+            }
+
+            bouton.addEventListener('click', function () {
+                configuration[1]();
+            });
+        });
+    }
+
     const parametresJeu = lireParametresJeu();
 
     if (selectQualiteGraphique) {
@@ -137,4 +236,7 @@ document.addEventListener('DOMContentLoaded', function () {
             evenement.stopPropagation();
         });
     }
+
+    initialiserAffichageTempsJeu();
+    initialiserDebugTempsJeu();
 });

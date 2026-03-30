@@ -1,3 +1,12 @@
+
+/* --------------------------------------------------------- */
+/* FONDS DIALOGUES                                           */
+/* --------------------------------------------------------- */
+const fondsDialogues = {
+    annonce_interieur: "ressources/images/fonds_dialogue/annonce_interieur.png",
+    annonce_marcher: "ressources/images/fonds_dialogue/annonce_marcher.png"
+};
+
 (function () {
     let carteDejaInitialisee = false;
 
@@ -40,8 +49,15 @@
         const calquePointsVille = document.getElementById('calque-points-ville');
         const fenetreLieuVille = document.getElementById('fenetre-lieu-ville');
         const titreLieuVille = document.getElementById('titre-lieu-ville');
+        const sousTitreLieuVille = document.getElementById('sous-titre-lieu-ville');
         const texteLieuVille = document.getElementById('texte-lieu-ville');
+        const titreInteractionLieuVille = document.getElementById('titre-interaction-lieu-ville');
+        const etatInteractionLieuVille = document.getElementById('etat-interaction-lieu-ville');
+        const imageLieuVille = document.getElementById('image-lieu-ville');
+        const calqueInteractionsLieuVille = document.getElementById('calque-interactions-lieu-ville');
+        const contenuLieuVille = document.getElementById('contenu-lieu-ville');
         const boutonFermerLieuVille = document.getElementById('bouton-fermer-lieu-ville');
+        const boutonRetourScene = document.getElementById('bouton-retour-scene');
         const boutonRetourVille = document.getElementById('bouton-retour-ville');
 
         if (!viewport || !contenu || !imageCarte || !grille || !surbrillance || !surbrillanceLieux || !repereJoueur || !valeurPositionJoueur) {
@@ -91,6 +107,210 @@
             caseDeclenchee: null,
             caseFermee: null,
             mode: 'jour'
+        };
+
+        const etatLieuVille = {
+            ouvert: false,
+            identifiant: null,
+            sceneCourante: null,
+            historiqueScenes: []
+        };
+
+        const donneesPanneauxLieuVille = {
+            guilde_aventuriers: {
+                apercu: {
+                    type: 'resume',
+                    titre: 'Guilde des aventuriers',
+                    description: 'Choisissez un point de la salle pour afficher le bon panneau : missions, rumeurs, informations de progression ou revente des trophées.',
+                    cartes: [
+                        { titre: 'Missions', texte: 'Quêtes solo, groupe, urgence et monde avec limites déjà rappelées dans l’interface.' },
+                        { titre: 'Rumeurs', texte: 'Petits articles courts pour préparer le joueur avant une quête ou un danger.' },
+                        { titre: 'Informations', texte: 'Grades F à S, réputation, règles et fonctionnement de la guilde.' },
+                        { titre: 'Revente', texte: 'Liste d’objets de trophées avec estimation et bouton placeholder de vente.' }
+                    ]
+                },
+                tableau_missions: {
+                    type: 'missions',
+                    titre: 'Tableau des missions',
+                    description: 'Placeholder structuré prêt à recevoir les vraies quêtes de la base plus tard.',
+                    missions: [
+                        { titre: 'Patrouille sur la route de Verdalis', type: 'Solo', rang: 'F', lieu: 'Route sud de Versalis', pnj: 'Caporal Néris', recompense: '24 cristaux + 1 réputation', resume: 'Sécuriser un tronçon fréquenté par des voleurs débutants.' },
+                        { titre: 'Nettoyage des caves humides', type: 'Groupe', rang: 'E', lieu: 'Sous-sols de l’auberge', pnj: 'Maître de guilde Arven', recompense: '38 cristaux + trophée de meute', resume: 'Éliminer plusieurs nuisibles dans une zone fermée.' },
+                        { titre: 'Alerte blessés à la porte est', type: 'Urgence', rang: 'D', lieu: 'Remparts de Versalis', pnj: 'Garde Lorian', recompense: '46 cristaux + 2 réputation', resume: 'Intervention rapide avant la fin du délai annoncé.' },
+                        { titre: 'Échos de l’ancien sanctuaire', type: 'Monde', rang: 'C', lieu: 'Temple oublié', pnj: 'Archiviste Selya', recompense: '72 cristaux + accès de suivi', resume: 'Quête globale liée aux rumeurs actives du monde.' }
+                    ],
+                    pied: 'Limites affichées : 2 quêtes personnelles, 1 quête de groupe, 1 quête d’urgence.'
+                },
+                maitre_guilde: {
+                    type: 'dialogue',
+                    titre: 'Maître de guilde',
+                    description: 'Discussion placeholder avec les thèmes principaux demandés.',
+                    dialogues: [
+                        { titre: 'Inscription aventurier', texte: 'Ouverture future du formulaire d’inscription et validation du statut d’aventurier.' },
+                        { titre: 'Questionnaire', texte: 'Questions sur votre style de combat, votre élément et votre préparation.' },
+                        { titre: 'Validation', texte: 'Le maître de guilde vérifiera plus tard rang, prérequis et accès aux missions.' }
+                    ]
+                },
+                tableau_rumeurs_guilde: {
+                    type: 'rumeurs',
+                    titre: 'Tableau des rumeurs',
+                    description: 'Petits articles immersifs affichés comme demandé.',
+                    rumeurs: [
+                        { titre: 'Brume au nord', texte: 'Des silhouettes ont été vues près de la vieille route au lever du jour.' },
+                        { titre: 'Chasseur disparu', texte: 'Un pisteur serait entré dans la forêt oubliée sans jamais revenir.' },
+                        { titre: 'Voix sous les pierres', texte: 'Des aventuriers jurent avoir entendu chanter sous un ancien escalier scellé.' }
+                    ]
+                },
+                informations_guilde: {
+                    type: 'informations',
+                    titre: 'Informations de la guilde',
+                    description: 'Récapitulatif propre du fonctionnement aventurier.',
+                    informations: [
+                        { libelle: 'Grades', valeur: 'F → E → D → C → B → A → S' },
+                        { libelle: 'Progression', valeur: 'Monstres vaincus, quêtes terminées et réputation générale.' },
+                        { libelle: 'Quêtes solo', valeur: 'Accessibles selon votre rang actuel.' },
+                        { libelle: 'Quêtes de groupe', valeur: '+1 rang maximum autorisé par rapport au vôtre.' },
+                        { libelle: 'Quêtes urgence', valeur: 'Disponibles pendant une durée limitée seulement.' },
+                        { libelle: 'Quêtes monde', valeur: 'Événements globaux touchant plusieurs joueurs et plusieurs lieux.' }
+                    ]
+                },
+                revente_trophees: {
+                    type: 'vente',
+                    titre: 'Revente des trophées',
+                    description: 'Placeholder de vente avec objets, estimation et gains en cristaux.',
+                    cristal: 'Total estimé : 67 cristaux',
+                    stock: [
+                        { nom: 'Crocs de loup gris', quantite: 4, prix: 16, progression: 68 },
+                        { nom: 'Œil de limon trouble', quantite: 2, prix: 14, progression: 54 },
+                        { nom: 'Écusson fendu de brigand', quantite: 1, prix: 37, progression: 92 }
+                    ]
+                }
+            },
+            guilde_commerce: {
+                apercu: {
+                    type: 'resume',
+                    titre: 'Guilde du commerce',
+                    description: 'Les trois boutons principaux sont déjà branchés : rumeurs commerciales, bourse et maître marchand.',
+                    cartes: [
+                        { titre: 'Rumeurs', texte: 'Convois, pénuries et besoins urgents par zone.' },
+                        { titre: 'Bourse', texte: 'Prix par ville, tendance et variation simplifiée.' },
+                        { titre: 'Maître marchand', texte: 'Discussion placeholder d’inscription et progression commerciale.' }
+                    ]
+                },
+                tableau_rumeurs_commerce: {
+                    type: 'rumeurs',
+                    titre: 'Rumeurs commerciales',
+                    description: 'Articles placeholder orientés économie et trajets commerciaux.',
+                    rumeurs: [
+                        { titre: 'Convoi retardé', texte: 'Le convoi de bois n’est toujours pas arrivé à Versalis ce matin.' },
+                        { titre: 'Hausse du sel', texte: 'Les réserves côtières baissent et les prix remontent dans l’intérieur.' },
+                        { titre: 'Demande d’herbes', texte: 'Les apothicaires paient mieux les plantes fraîches cette semaine.' }
+                    ]
+                },
+                bourse_villes: {
+                    type: 'bourse',
+                    titre: 'Bourse des villes',
+                    description: 'Vue lisible des variations de prix, prête à être reliée à la vraie économie.',
+                    stock: [
+                        { nom: 'Bois brut · Versalis', quantite: '12/u', prix: '+8%', progression: 58 },
+                        { nom: 'Herbes communes · Verdalis', quantite: '9/u', prix: '-3%', progression: 34 },
+                        { nom: 'Sel marin · Port marchand', quantite: '17/u', prix: '+12%', progression: 76 },
+                        { nom: 'Minerai rouge · Pyros', quantite: '21/u', prix: '+5%', progression: 49 }
+                    ]
+                },
+                maitre_commerce: {
+                    type: 'dialogue',
+                    titre: 'Maître marchand',
+                    description: 'PNJ placeholder pour l’inscription commerciale et les conseils de marché.',
+                    dialogues: [
+                        { titre: 'Inscription', texte: 'La guilde vérifiera plus tard votre profil avant de vous accepter.' },
+                        { titre: 'Licence', texte: 'Certaines opérations demanderont un rang commercial minimal.' },
+                        { titre: 'Conseils', texte: 'Le maître marchand vous orientera vers les meilleures routes et villes.' }
+                    ]
+                }
+            },
+            marche: {
+                apercu: {
+                    type: 'resume',
+                    titre: 'Marché',
+                    description: 'Le marché est déjà découpé en accueil, étal de vente et annonces. Chaque bouton a maintenant son vrai panneau placeholder.',
+                    cartes: [
+                        { titre: 'Marchand', texte: 'Discussion locale et informations rapides.' },
+                        { titre: 'Étal de vente', texte: 'Interface joueur pour vendre et consulter ses articles.' },
+                        { titre: 'Annonces', texte: 'Petits articles de ville, prix et besoins urgents.' }
+                    ]
+                },
+                pnj_marche: {
+                    type: 'dialogue',
+                    titre: 'Marchand du marché',
+                    description: 'Discussion courte avec le marchand principal du marché.',
+                    dialogues: [
+                        { titre: 'Accueil', texte: 'Le marchand vous salue et vous présente les tendances locales.' },
+                        { titre: 'Prix du jour', texte: 'Les denrées simples tournent vite, les trophées moins.' },
+                        { titre: 'Conseil', texte: 'Les annonces changent vite, revenez souvent vérifier le panneau.' }
+                    ]
+                },
+                etal_vente: {
+                    type: 'vente',
+                    titre: 'Étal de vente',
+                    description: 'Interface placeholder de vente joueur au marché.',
+                    cristal: 'Total potentiel : 53 cristaux',
+                    stock: [
+                        { nom: 'Pommes sauvages', quantite: 6, prix: 12, progression: 44 },
+                        { nom: 'Peau de renard', quantite: 2, prix: 18, progression: 62 },
+                        { nom: 'Vieille dague', quantite: 1, prix: 23, progression: 81 }
+                    ]
+                },
+                annonces_marche: {
+                    type: 'rumeurs',
+                    titre: 'Annonces du marché',
+                    description: 'Panneau public de la ville avec besoins et infos locales.',
+                    rumeurs: [
+                        { titre: 'Recherche de farine', texte: 'Une cuisinière paie bien pour une livraison avant la tombée du soir.' },
+                        { titre: 'Prix des peaux', texte: 'Les fourrures se vendent mieux depuis le retour du froid.' },
+                        { titre: 'Place libre', texte: 'Un étal sera disponible demain pour un vendeur occasionnel.' }
+                    ]
+                },
+                vendeur_etal: {
+                    type: 'dialogue',
+                    titre: 'Vendeur de l’étal',
+                    description: 'Discussion placeholder liée à l’étal de vente.',
+                    dialogues: [
+                        { titre: 'Stock', texte: 'Le vendeur peut vous indiquer ce qui se vend vite aujourd’hui.' },
+                        { titre: 'Marge', texte: 'Les petits objets partent vite mais rapportent moins.' }
+                    ]
+                },
+                acheter_etal: {
+                    type: 'vente',
+                    titre: 'Acheter / vendre à l’étal',
+                    description: 'Vue simplifiée prête pour la future vraie logique d’achat et vente.',
+                    cristal: 'Panier estimé : 31 cristaux',
+                    stock: [
+                        { nom: 'Pain du jour', quantite: 3, prix: 6, progression: 20 },
+                        { nom: 'Bandage simple', quantite: 2, prix: 9, progression: 35 },
+                        { nom: 'Lanterne usée', quantite: 1, prix: 16, progression: 57 }
+                    ]
+                },
+                responsable_annonces: {
+                    type: 'dialogue',
+                    titre: 'Responsable des annonces',
+                    description: 'Discussion placeholder du panneau des annonces.',
+                    dialogues: [
+                        { titre: 'Tri des affiches', texte: 'Les annonces urgentes restent en haut, les autres tournent chaque jour.' },
+                        { titre: 'Règlement', texte: 'Les affiches frauduleuses seront retirées par la ville.' }
+                    ]
+                },
+                lire_annonces: {
+                    type: 'rumeurs',
+                    titre: 'Lecture des annonces',
+                    description: 'Lecture directe du panneau des annonces publiques.',
+                    rumeurs: [
+                        { titre: 'Achat de bois sec', texte: 'Le restaurant cherche du bois sec pour ses fours.' },
+                        { titre: 'Main-d’œuvre', texte: 'Un artisan cherche une aide ponctuelle pour transporter des caisses.' },
+                        { titre: 'Récolte urgente', texte: 'Les herbes fraîches sont reprises au-dessus du prix habituel.' }
+                    ]
+                }
+            }
         };
 
         function decoderEntitesHtml(texte) {
@@ -676,28 +896,358 @@ function obtenirGeometrieAffichee() {
             return 'jour';
         }
 
+        function obtenirConfigurationLieuVille(identifiantLieu) {
+            const villes = configurationVilles && configurationVilles.villes ? configurationVilles.villes : {};
+            const villeActive = etatVille.code && villes[etatVille.code] ? villes[etatVille.code] : null;
+            const lieuxInterieurs = villeActive && villeActive.lieux_interieurs ? villeActive.lieux_interieurs : {};
+
+            if (!identifiantLieu || !lieuxInterieurs[identifiantLieu]) {
+                return null;
+            }
+
+            return lieuxInterieurs[identifiantLieu];
+        }
+
+        function obtenirSceneLieuVille(configurationLieu, identifiantScene) {
+            const scenes = configurationLieu && configurationLieu.scenes ? configurationLieu.scenes : {};
+
+            if (identifiantScene && scenes[identifiantScene]) {
+                return scenes[identifiantScene];
+            }
+
+            return null;
+        }
+
+        function echapperTexteHtml(valeur) {
+            return String(valeur || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function obtenirDonneesPanneauLieu(identifiantLieu, identifiantInteraction) {
+            if (!identifiantLieu || !donneesPanneauxLieuVille[identifiantLieu]) {
+                return null;
+            }
+
+            const donneesLieu = donneesPanneauxLieuVille[identifiantLieu];
+            if (identifiantInteraction && donneesLieu[identifiantInteraction]) {
+                return donneesLieu[identifiantInteraction];
+            }
+
+            return donneesLieu.apercu || null;
+        }
+
+        function construireHtmlPanneauLieu(donneesPanneau) {
+            if (!donneesPanneau) {
+                return '<div class="bloc-placeholder-lieu-ville"><strong>Interface du lieu</strong><p>Sélectionnez une interaction dans l’image pour afficher son contenu.</p></div>';
+            }
+
+            const titre = echapperTexteHtml(donneesPanneau.titre || 'Panneau');
+            const description = echapperTexteHtml(donneesPanneau.description || '');
+            let contenu = '<div class="bloc-panneau-lieu-ville"><div class="entete-panneau-lieu-ville"><h4>' + titre + '</h4><p>' + description + '</p></div>';
+
+            if (donneesPanneau.type === 'missions' && Array.isArray(donneesPanneau.missions)) {
+                contenu += '<div class="grille-cartes-lieu-ville">';
+                donneesPanneau.missions.forEach(function (mission) {
+                    contenu += '<article class="carte-liste-lieu-ville">'
+                        + '<h5>' + echapperTexteHtml(mission.titre) + '</h5>'
+                        + '<div class="ligne-meta-lieu-ville">'
+                        + '<span class="etiquette-meta-lieu-ville">' + echapperTexteHtml(mission.type) + '</span>'
+                        + '<span class="etiquette-meta-lieu-ville">Rang ' + echapperTexteHtml(mission.rang) + '</span>'
+                        + '<span class="etiquette-meta-lieu-ville">' + echapperTexteHtml(mission.recompense) + '</span>'
+                        + '</div>'
+                        + '<p>' + echapperTexteHtml(mission.resume) + '</p>'
+                        + '<p><strong>Lieu :</strong> ' + echapperTexteHtml(mission.lieu) + '</p>'
+                        + '<p><strong>PNJ :</strong> ' + echapperTexteHtml(mission.pnj) + '</p>'
+                        + '<div class="ligne-meta-lieu-ville">'
+                        + '<span class="etiquette-meta-lieu-ville">Accepter</span>'
+                        + '<span class="etiquette-meta-lieu-ville">Refuser</span>'
+                        + '</div>'
+                        + '</article>';
+                });
+                contenu += '</div>';
+            } else if ((donneesPanneau.type === 'rumeurs' || donneesPanneau.type === 'resume') && Array.isArray(donneesPanneau.rumeurs || donneesPanneau.cartes)) {
+                const elements = donneesPanneau.rumeurs || donneesPanneau.cartes;
+                contenu += '<div class="grille-cartes-lieu-ville">';
+                elements.forEach(function (element) {
+                    contenu += '<article class="carte-liste-lieu-ville"><h5>' + echapperTexteHtml(element.titre) + '</h5><p>' + echapperTexteHtml(element.texte) + '</p></article>';
+                });
+                contenu += '</div>';
+            } else if (donneesPanneau.type === 'informations' && Array.isArray(donneesPanneau.informations)) {
+                contenu += '<div class="grille-infos-lieu-ville">';
+                donneesPanneau.informations.forEach(function (information) {
+                    contenu += '<div class="ligne-info-lieu-ville"><strong>' + echapperTexteHtml(information.libelle) + '</strong><span>' + echapperTexteHtml(information.valeur) + '</span></div>';
+                });
+                contenu += '</div>';
+            } else if (donneesPanneau.type === 'vente' || donneesPanneau.type === 'bourse') {
+                if (donneesPanneau.cristal) {
+                    contenu += '<div class="ligne-info-lieu-ville"><strong>Estimation</strong><span>' + echapperTexteHtml(donneesPanneau.cristal) + '</span></div>';
+                }
+                if (Array.isArray(donneesPanneau.stock)) {
+                    contenu += '<div class="grille-stock-lieu-ville">';
+                    donneesPanneau.stock.forEach(function (ligne) {
+                        const progression = Math.max(0, Math.min(100, Number(ligne.progression || 0)));
+                        contenu += '<div class="ligne-stock-lieu-ville">'
+                            + '<div class="entete-stock-lieu-ville"><strong>' + echapperTexteHtml(ligne.nom) + '</strong><span class="etiquette-stock-lieu-ville">Qté / valeur : ' + echapperTexteHtml(ligne.quantite) + ' · ' + echapperTexteHtml(ligne.prix) + '</span></div>'
+                            + '<div class="barre-progression-lieu-ville"><span style="width:' + progression + '%;"></span></div>'
+                            + '</div>';
+                    });
+                    contenu += '</div>';
+                }
+            } else if (donneesPanneau.type === 'dialogue' && Array.isArray(donneesPanneau.dialogues)) {
+                contenu += '<div class="liste-dialogues-lieu-ville">';
+                donneesPanneau.dialogues.forEach(function (dialogue) {
+                    contenu += '<div class="ligne-dialogue-lieu-ville"><strong>' + echapperTexteHtml(dialogue.titre) + '</strong><p>' + echapperTexteHtml(dialogue.texte) + '</p></div>';
+                });
+                contenu += '</div>';
+            }
+
+            if (donneesPanneau.pied) {
+                contenu += '<p class="pied-panneau-lieu-ville">' + echapperTexteHtml(donneesPanneau.pied) + '</p>';
+            }
+
+            contenu += '</div>';
+            return contenu;
+        }
+
+        function afficherPanneauLieuVille(identifiantLieu, identifiantInteraction) {
+            if (!contenuLieuVille) {
+                return;
+            }
+
+            const donneesPanneau = obtenirDonneesPanneauLieu(identifiantLieu, identifiantInteraction);
+            contenuLieuVille.innerHTML = construireHtmlPanneauLieu(donneesPanneau);
+            contenuLieuVille.scrollTop = 0;
+        }
+
+        function rafraichirTexteInteractionLieu(titreInteraction, texteInteraction) {
+            if (titreInteractionLieuVille) {
+                titreInteractionLieuVille.textContent = titreInteraction || 'Interaction';
+            }
+
+            if (etatInteractionLieuVille) {
+                etatInteractionLieuVille.textContent = texteInteraction || 'Cliquez sur une icône du lieu pour lancer une discussion ou une action.';
+            }
+        }
+
+        function mettreAJourBoutonsNavigationLieuVille() {
+            if (boutonRetourScene) {
+                boutonRetourScene.style.display = etatLieuVille.historiqueScenes && etatLieuVille.historiqueScenes.length > 0 ? 'inline-flex' : 'none';
+                boutonRetourScene.textContent = 'Retour à l’accueil';
+            }
+
+            if (boutonRetourVille) {
+                boutonRetourVille.style.display = 'inline-flex';
+            }
+        }
+
         function fermerFenetreLieuVille() {
             if (!fenetreLieuVille) {
                 return;
             }
 
             fenetreLieuVille.classList.add('fenetre-lieu-ville-cachee');
+            etatLieuVille.ouvert = false;
+            etatLieuVille.identifiant = null;
+            etatLieuVille.sceneCourante = null;
+            etatLieuVille.historiqueScenes = [];
+
+            if (calqueInteractionsLieuVille) {
+                calqueInteractionsLieuVille.innerHTML = '';
+            }
+
+            rafraichirTexteInteractionLieu('Interaction', 'Cliquez sur une icône du lieu pour lancer une discussion ou une action.');
+            afficherPanneauLieuVille(null, null);
+            mettreAJourBoutonsNavigationLieuVille();
         }
 
-        function ouvrirFenetreLieuVille(pointVille) {
-            if (!fenetreLieuVille || !titreLieuVille || !texteLieuVille || !pointVille) {
+        function construireInteractionsLieuVille(configurationScene) {
+            if (!calqueInteractionsLieuVille) {
                 return;
             }
 
-            titreLieuVille.textContent = pointVille.nom || 'Lieu';
+            calqueInteractionsLieuVille.innerHTML = '';
 
-            if (pointVille.categorie === 'sortie') {
-                texteLieuVille.textContent = 'Cette porte vous permettra bientôt de quitter la ville avec un dialogue de garde. Pour cette étape, elle referme simplement la vue de ville.';
+            const interactions = configurationScene && Array.isArray(configurationScene.interactions)
+                ? configurationScene.interactions
+                : [];
+
+            interactions.forEach(function (interactionLieu) {
+                const positionX = Number(interactionLieu.x);
+                const positionY = Number(interactionLieu.y);
+
+                if (!Number.isFinite(positionX) || !Number.isFinite(positionY)) {
+                    return;
+                }
+
+                const boutonInteraction = document.createElement('button');
+                boutonInteraction.type = 'button';
+                boutonInteraction.className = 'point-interaction-lieu point-interaction-lieu-' + (interactionLieu.type || 'action');
+                boutonInteraction.style.left = positionX + '%';
+                boutonInteraction.style.top = positionY + '%';
+                boutonInteraction.setAttribute('aria-label', interactionLieu.nom || 'Interaction');
+                boutonInteraction.title = interactionLieu.nom || 'Interaction';
+
+                const iconeInteraction = document.createElement('span');
+                iconeInteraction.className = 'point-interaction-lieu-icone';
+                iconeInteraction.textContent = interactionLieu.icone || '•';
+
+                const etiquetteInteraction = document.createElement('span');
+                etiquetteInteraction.className = 'point-interaction-lieu-etiquette';
+                etiquetteInteraction.textContent = interactionLieu.nom || 'Interaction';
+
+                boutonInteraction.appendChild(iconeInteraction);
+                boutonInteraction.appendChild(etiquetteInteraction);
+                boutonInteraction.addEventListener('click', function (evenement) {
+                    evenement.preventDefault();
+                    evenement.stopPropagation();
+                    gererInteractionLieuVille(interactionLieu);
+                });
+
+                calqueInteractionsLieuVille.appendChild(boutonInteraction);
+            });
+        }
+
+        function afficherSceneLieuVille(configurationLieu, identifiantScene, ajouterHistorique) {
+            if (!configurationLieu || !titreLieuVille || !texteLieuVille) {
+                return;
+            }
+
+            const sceneDemandee = obtenirSceneLieuVille(configurationLieu, identifiantScene);
+            const configurationAffichee = sceneDemandee || configurationLieu;
+            const scenePrecedente = etatLieuVille.sceneCourante;
+
+            if (sceneDemandee) {
+                if (ajouterHistorique && scenePrecedente && scenePrecedente !== identifiantScene) {
+                    etatLieuVille.historiqueScenes.push(scenePrecedente);
+                }
+                etatLieuVille.sceneCourante = identifiantScene;
             } else {
-                texteLieuVille.textContent = 'La fenêtre de ce lieu est maintenant sélectionnable. Le contenu détaillé du bâtiment et les PNJ seront branchés à l’étape suivante.';
+                etatLieuVille.sceneCourante = null;
+            }
+
+            titreLieuVille.textContent = configurationAffichee && configurationAffichee.titre
+                ? configurationAffichee.titre
+                : 'Lieu';
+
+            if (sousTitreLieuVille) {
+                sousTitreLieuVille.textContent = configurationAffichee && configurationAffichee.sous_titre
+                    ? configurationAffichee.sous_titre
+                    : 'Explorez le lieu et choisissez une interaction.';
+            }
+
+            texteLieuVille.textContent = configurationAffichee && configurationAffichee.description
+                ? configurationAffichee.description
+                : 'Ce lieu sera détaillé plus tard.';
+
+            if (imageLieuVille) {
+                imageLieuVille.src = configurationAffichee && configurationAffichee.fond ? configurationAffichee.fond : 'ressources/images/fonds_dialogue/fond_vide.png';
+                imageLieuVille.alt = configurationAffichee && configurationAffichee.titre ? ('Décor de ' + configurationAffichee.titre) : 'Décor du lieu';
+            }
+
+            construireInteractionsLieuVille(configurationAffichee);
+            afficherPanneauLieuVille(etatLieuVille.identifiant, null);
+
+            if (configurationAffichee && configurationAffichee.texte_interaction_initial) {
+                rafraichirTexteInteractionLieu(
+                    configurationAffichee.titre || 'Discussion',
+                    configurationAffichee.texte_interaction_initial
+                );
+            } else {
+                rafraichirTexteInteractionLieu('Interaction', 'Cliquez sur une icône du lieu pour lancer une discussion ou une action.');
+            }
+
+            mettreAJourBoutonsNavigationLieuVille();
+        }
+
+        function revenirScenePrecedenteLieuVille() {
+            const configurationLieu = obtenirConfigurationLieuVille(etatLieuVille.identifiant);
+
+            if (!configurationLieu) {
+                fermerFenetreLieuVille();
+                return;
+            }
+
+            if (etatLieuVille.historiqueScenes.length > 0) {
+                const scenePrecedente = etatLieuVille.historiqueScenes.pop();
+                afficherSceneLieuVille(configurationLieu, scenePrecedente, false);
+                return;
+            }
+
+            if (configurationLieu.scene_initiale) {
+                afficherSceneLieuVille(configurationLieu, configurationLieu.scene_initiale, false);
+                return;
+            }
+
+            fermerFenetreLieuVille();
+        }
+
+        function gererInteractionLieuVille(interactionLieu) {
+            if (!interactionLieu) {
+                return;
+            }
+
+            const typeInteraction = interactionLieu.type || 'action';
+
+            if (typeInteraction === 'retour') {
+                fermerFenetreLieuVille();
+                return;
+            }
+
+            if (typeInteraction === 'retour_scene') {
+                revenirScenePrecedenteLieuVille();
+                return;
+            }
+
+            if (typeInteraction === 'scene') {
+                const configurationLieu = obtenirConfigurationLieuVille(etatLieuVille.identifiant);
+                if (!configurationLieu || !interactionLieu.scene_cible) {
+                    return;
+                }
+                afficherSceneLieuVille(configurationLieu, interactionLieu.scene_cible, true);
+                afficherPanneauLieuVille(etatLieuVille.identifiant, interactionLieu.id || null);
+                rafraichirTexteInteractionLieu(interactionLieu.nom || 'Lieu', interactionLieu.texte || 'Vous changez de zone.');
+                return;
+            }
+
+            if (typeInteraction === 'pnj') {
+                afficherPanneauLieuVille(etatLieuVille.identifiant, interactionLieu.id || null);
+                rafraichirTexteInteractionLieu(interactionLieu.nom || 'Discussion', interactionLieu.texte || 'La discussion avec ce PNJ sera détaillée plus tard.');
+                return;
+            }
+
+            afficherPanneauLieuVille(etatLieuVille.identifiant, interactionLieu.id || null);
+            rafraichirTexteInteractionLieu(interactionLieu.nom || 'Action', interactionLieu.texte || 'Cette action sera branchée plus tard.');
+        }
+
+        function ouvrirFenetreLieuVille(pointVille) {
+            if (!fenetreLieuVille || !pointVille) {
+                return;
+            }
+
+            const configurationLieu = obtenirConfigurationLieuVille(pointVille.id || '');
+
+            etatLieuVille.identifiant = pointVille.id || null;
+            etatLieuVille.historiqueScenes = [];
+
+            if (configurationLieu && configurationLieu.scene_initiale) {
+                afficherSceneLieuVille(configurationLieu, configurationLieu.scene_initiale, false);
+            } else {
+                afficherSceneLieuVille(configurationLieu, null, false);
+            }
+
+            if (pointVille.categorie === 'pnj_ville' && configurationLieu) {
+                rafraichirTexteInteractionLieu(
+                    configurationLieu.titre || 'Discussion',
+                    configurationLieu.texte_interaction_initial || configurationLieu.description || 'Vous engagez la conversation.'
+                );
             }
 
             fenetreLieuVille.classList.remove('fenetre-lieu-ville-cachee');
+            etatLieuVille.ouvert = true;
         }
 
         function appliquerImageVille() {
@@ -772,6 +1322,33 @@ function obtenirGeometrieAffichee() {
             return null;
         }
 
+        function obtenirPointsVilleAffiches(villeActiveConfiguration) {
+            const pointsFixes = villeActiveConfiguration && Array.isArray(villeActiveConfiguration.points_interieur)
+                ? villeActiveConfiguration.points_interieur.filter(function (pointVille) {
+                    return (pointVille.categorie || '') !== 'pnj_ville';
+                })
+                : [];
+
+            const pnjsSecondaires = villeActiveConfiguration && Array.isArray(villeActiveConfiguration.pnjs_secondaires)
+                ? villeActiveConfiguration.pnjs_secondaires.slice()
+                : [];
+
+            for (let indexMelange = pnjsSecondaires.length - 1; indexMelange > 0; indexMelange -= 1) {
+                const indexAleatoire = Math.floor(Math.random() * (indexMelange + 1));
+                const valeurTemporaire = pnjsSecondaires[indexMelange];
+                pnjsSecondaires[indexMelange] = pnjsSecondaires[indexAleatoire];
+                pnjsSecondaires[indexAleatoire] = valeurTemporaire;
+            }
+
+            const pnjsAffiches = pnjsSecondaires.slice(0, 4).map(function (pnjSecondaire) {
+                return Object.assign({}, pnjSecondaire, {
+                    categorie: 'pnj_ville'
+                });
+            });
+
+            return pointsFixes.concat(pnjsAffiches);
+        }
+
         function construirePointsVille() {
             if (!calquePointsVille) {
                 return;
@@ -781,9 +1358,7 @@ function obtenirGeometrieAffichee() {
 
             const villes = configurationVilles && configurationVilles.villes ? configurationVilles.villes : {};
             const villeActiveConfiguration = etatVille.code && villes[etatVille.code] ? villes[etatVille.code] : null;
-            const points = villeActiveConfiguration && Array.isArray(villeActiveConfiguration.points_interieur)
-                ? villeActiveConfiguration.points_interieur
-                : [];
+            const points = obtenirPointsVilleAffiches(villeActiveConfiguration);
 
             points.forEach(function (pointVille) {
                 const positionX = Number(pointVille.x);
@@ -1050,6 +1625,10 @@ function obtenirGeometrieAffichee() {
 
         if (boutonFermerLieuVille) {
             boutonFermerLieuVille.addEventListener('click', fermerFenetreLieuVille);
+        }
+
+        if (boutonRetourScene) {
+            boutonRetourScene.addEventListener('click', revenirScenePrecedenteLieuVille);
         }
 
         if (boutonRetourVille) {
